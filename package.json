@@ -1,0 +1,15 @@
+{
+  "name": "carteirinhadigital",
+  "version": "1.0.0",
+  "description": "Sistema de login de usuários com Supabase",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.5",
+    "express": "^4.19.2"
+  },
+  "author": "Xavier",
+  "license": "MIT"
+}
