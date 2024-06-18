@@ -7,10 +7,10 @@
     <title>Document</title>
 </head>
 <body>
-    <h2>Register</h2>
+    <h1>Cadastrar Usuário</h2>
     <form id="registerForm">
-        <label for="fullName">Nome Completo:</label>
-        <input type="text" id="fullName" name="fullName" required>
+        <label for="nome">Nome Completo:</label>
+        <input type="text" id="nome" name="nome" required>
         <br>
         <label for="email">Email:</label>
         <input type="text" id="email" name="email" required>
@@ -18,24 +18,26 @@
         <label for="password">Senha:</label>
         <input type="password" id="password" name="password" required>
         <br>
-        <label for="course">Curso:</label>
-        <input type="text" id="course" name="course" required>
+        <label for="curso">Curso:</label>
+        <input type="text" id="curso" name="curso" required>
         <br>
         <label for="cpf">CPF:</label>
         <input type="text" id="cpf" name="cpf" required>
         <br>
-        <label for="campus">Data de nascimento:</label>
-        <input type="date" id="dateNascimento" name="campus" required>
+        <label for="dataNascimento">Data de nascimento:</label>
+        <input type="date" id="dataNascimento" name="dataNascimento" required>
+        <br>
+        <label for="numeroTel">Número de Telefone:</label>
+        <input type="tel" id="numeroTel" name="phone" required>
+        <br>
         <label for="campus">Campus:</label>
         <input type="text" id="campus" name="campus" required>
-        <label for="validate">validade:</label>
-        <input type="text" id="validate" name="validate" required>
         <br>
-        <label for="phone">Número de Telefone:</label>
-        <input type="tel" id="phone" name="phone" required>
+        <label for="validade">validade:</label>
+        <input type="date" id="validade" name="validade" required>
         <br>
-        <label for="photoUrl">URL da Foto:</label>
-        <input type="text" id="photoUrl" name="photoUrl" required>
+        <label for="fotoUrl">URL da Foto:</label>
+        <input type="text" id="fotoUrl" name="fotoUrl" required>
         <br>
         <button type="submit">Registrar</button>
     </form>
@@ -45,17 +47,24 @@
     event.preventDefault();
     const email = event.target.email.value;
     const password = event.target.password.value;
+    const nome = event.target.nome.value;
+    const curso = event.target.curso.value;
+    const cpf = event.target.cpf.value;
+    const numeroTel = event.target.numeroTel.value;
+    const dataNascimento = event.target.dataNascimento.value;
+    const validade = event.target.validade.value;
+    const fotoUrl = event.target.fotoUrl.value;
 
     const supabaseUrl = 'https://mjjumtkxcqbdbynzmqqh.supabase.co';
 
-    const url = `${supabaseUrl}/rest/v1/users?columns=%22email%22%2C%22password%22`;
+    const url = `${supabaseUrl}/rest/v1/users?columns=%22email%22%2C%22password%22%2C%22nome%22%2C%22curso%22%2C%22validade%22%2C%22cpf%22%2C%22numeroTel%22%2C%22dataNascimento%22%2C%22fotoUrl%22`;
     const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qanVtdGt4Y3FiZGJ5bnptcXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg3MTA3NTIsImV4cCI6MjAzNDI4Njc1Mn0.1Bfat4NXHJjTFZf-RV6fFUNr56kVqjwetH4ROWBDEuE', // Use a sua chave de acesso aqui
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, nome, curso, validade, cpf, dataNascimento, numeroTel, fotoUrl}),
     });
 
     if (response.ok) {
