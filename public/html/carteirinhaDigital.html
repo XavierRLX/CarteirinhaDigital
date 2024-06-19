@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style/styleCD.css">
+    <title>carteirinha Digital</title>
+</head>
+
+<body>
+    <section class="parteAzul">
+        <header>
+            <section>
+                <div class="iconsImg">
+                    <img id="imgUsu" src="" alt="fotoEstudante">
+                    <p id="imgUsu"></p>
+                </div>
+                <h1 id="nome">Nome</h1>
+                <h2 id="email">email</h2>
+                <h2 id="numeroTel">numero</h2>
+            </section>
+        </header>
+
+        <main>
+            <p id="curso">nome do curso aqui</p>
+        <div class="cardTop">
+            <div class="logo">
+                <img src="https://sia.estacio.br/sianet/Content/estacio/SiteNovo/dist/img/logos/logo-estacio-sia-v2.png"
+                    alt="logo">
+            </div>
+        
+        </div>
+        </section>
+        <section class="parteBranca">
+
+        <div>
+            <div>
+                <p>matricula</p>
+                <p id="matricula">n matricula</p>
+            </div>
+            <div>
+                <p>validade</p>
+                <p id="validade">dt validade</p>
+            </div>
+        </div>
+
+        <p>Acessar Carteira</p>
+
+        <section>
+            <h2>Meu perfil</h2>
+
+            <div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Versão do app</p>
+            <p>Sair do APP</p>
+            <a href="/cadastroUsu.html" title="cadastro Usuário">
+                <p>Cadastro User</p>
+            </a>
+        </footer>
+
+        </main>
+
+        <nav>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </nav>
+    </section>
+</body>
+
+<!-- S2Ab44TLNk5JG7mF senha supabse -->
+<script>
+    // Recupera as informações do usuário do localStorage e exibe na página
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if (userInfo) {
+        document.getElementById('nome').innerHTML = `${userInfo.nome} `
+        document.getElementById('email').innerHTML = `${userInfo.email} `
+        document.getElementById('imgUsu').src = `${userInfo.fotoUrl} `
+        document.getElementById('numeroTel').innerHTML = `${userInfo.numeroTel} `
+        document.getElementById('curso').innerHTML = `${userInfo.curso} `
+        document.getElementById('nome').innerHTML = `${userInfo.nome} `
+    } else {
+        alert('Informações do usuário não encontradas');
+        window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
+    }
+</script>
+
+</html>

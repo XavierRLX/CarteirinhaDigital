@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style/styleCU.css">
+    <title>Document</title>
+</head>
 <body>
     <h1>Cadastrar Usuário</h1>
     <form id="registerForm">
@@ -34,7 +43,7 @@
         <button type="submit">Registrar</button>
     </form>
 
-    <a href="/login.html" title="Ir para Login">Login</a>
+    <a href="/login" title="Ir para Login">Login</a>
 
     <h2>Lista de Usuários</h2>
     <div id="userList"></div>
@@ -84,6 +93,7 @@
                     'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({ email, password, nome, curso, validade, cpf, dataNascimento, numeroTel, fotoUrl }),
+            
             });
 
             if (response.ok) {
@@ -171,3 +181,4 @@
         };
     </script>
 </body>
+</html>

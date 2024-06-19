@@ -17,7 +17,7 @@
         <br>
         <button type="submit">Entrar</button>
 
-        <a href="/cadastroUsu.html" title="Ir para cadastro de usuário"><p>Cadastrar Usuário</p></a>
+        <a href="/cadastroUsu" title="Ir para cadastro de usuário"><p>Cadastrar Usuário</p></a>
 
     </form>
 
@@ -44,7 +44,7 @@
                     // Armazena as informações do usuário no localStorage
                     localStorage.setItem('userInfo', JSON.stringify(user));
                     // Redireciona para a página infoUsuario
-                    window.location.href = 'infoUsuario.html';
+                    window.location.href = 'carteirinhaDigital';
                 } else {
                     alert('Email ou senha incorretos');
                 }
