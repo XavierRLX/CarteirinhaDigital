@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+        <br>
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Entrar</button>
+
+        <a href="/cadastroUsu.html" title="Ir para cadastro de usuário"><p>Cadastrar Usuário</p></a>
+
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = event.target.email.value;
+            const password = event.target.password.value;
+
+            const supabaseUrl = 'https://mjjumtkxcqbdbynzmqqh.supabase.co';
+            const url = `${supabaseUrl}/rest/v1/users?select=*`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qanVtdGt4Y3FiZGJ5bnptcXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg3MTA3NTIsImV4cCI6MjAzNDI4Njc1Mn0.1Bfat4NXHJjTFZf-RV6fFUNr56kVqjwetH4ROWBDEuE',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const user = data.find(u => u.email === email && u.password === password);
+                if (user) {
+                    // Armazena as informações do usuário no localStorage
+                    localStorage.setItem('userInfo', JSON.stringify(user));
+                    // Redireciona para a página infoUsuario
+                    window.location.href = 'infoUsuario.html';
+                } else {
+                    alert('Email ou senha incorretos');
+                }
+            } else {
+                alert('Erro ao fazer login');
+            }
+        });
+    </script>
+</body>
+</html>

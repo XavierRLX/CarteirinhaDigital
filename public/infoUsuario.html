@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Informações do Usuário</h1>
+    <div id="userInfo"></div>
+
+    <script>
+        // Recupera as informações do usuário do localStorage e exibe na página
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        if (userInfo) {
+            document.getElementById('userInfo').innerHTML = `
+                <p><strong>Nome:</strong> ${userInfo.nome}</p>
+                <p><strong>Email:</strong> ${userInfo.email}</p>
+                <p><strong>Curso:</strong> ${userInfo.curso}</p>
+                <p><strong>CPF:</strong> ${userInfo.cpf}</p>
+                <p><strong>Data de Nascimento:</strong> ${userInfo.dataNascimento}</p>
+                <p><strong>Número de Telefone:</strong> ${userInfo.numeroTel}</p>
+                <p><strong>Campus:</strong> ${userInfo.campus}</p>
+                <p><strong>Validade:</strong> ${userInfo.validade}</p>
+                <img src="${userInfo.fotoUrl}" alt="Foto do Usuário" style="max-width: 200px;">
+            `;
+        } else {
+            alert('Informações do usuário não encontradas');
+            window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
+        }
+    </script>
+</body>
+</html>

@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
 <body>
-    <h1>Cadastrar Usuário</h2>
+    <h1>Cadastrar Usuário</h1>
     <form id="registerForm">
         <label for="nome">Nome Completo:</label>
         <input type="text" id="nome" name="nome" required>
@@ -28,12 +20,12 @@
         <input type="date" id="dataNascimento" name="dataNascimento" required>
         <br>
         <label for="numeroTel">Número de Telefone:</label>
-        <input type="tel" id="numeroTel" name="phone" required>
+        <input type="tel" id="numeroTel" name="numeroTel" required>
         <br>
         <label for="campus">Campus:</label>
         <input type="text" id="campus" name="campus" required>
         <br>
-        <label for="validade">validade:</label>
+        <label for="validade">Validade:</label>
         <input type="date" id="validade" name="validade" required>
         <br>
         <label for="fotoUrl">URL da Foto:</label>
@@ -41,41 +33,141 @@
         <br>
         <button type="submit">Registrar</button>
     </form>
-    
+
+    <a href="/login.html" title="Ir para Login">Login</a>
+
+    <h2>Lista de Usuários</h2>
+    <div id="userList"></div>
+
     <script>
+        const supabaseUrl = 'https://mjjumtkxcqbdbynzmqqh.supabase.co';
+        const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qanVtdGt4Y3FiZGJ5bnptcXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg3MTA3NTIsImV4cCI6MjAzNDI4Njc1Mn0.1Bfat4NXHJjTFZf-RV6fFUNr56kVqjwetH4ROWBDEuE';
+        const adminPassword = 'admin1234';
+        let enteredPassword = '';
+
+        function checkAdminPassword() {
+            const inputPassword = prompt("Por favor, insira a senha de administrador:");
+            if (inputPassword !== adminPassword) {
+                alert('Senha de administrador incorreta!');
+                return false;
+            }
+            enteredPassword = inputPassword;
+            return true;
+        }
+
         document.getElementById('registerForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const email = event.target.email.value;
-    const password = event.target.password.value;
-    const nome = event.target.nome.value;
-    const curso = event.target.curso.value;
-    const cpf = event.target.cpf.value;
-    const numeroTel = event.target.numeroTel.value;
-    const dataNascimento = event.target.dataNascimento.value;
-    const validade = event.target.validade.value;
-    const fotoUrl = event.target.fotoUrl.value;
+            event.preventDefault();
 
-    const supabaseUrl = 'https://mjjumtkxcqbdbynzmqqh.supabase.co';
+            const inputPassword = prompt("Por favor, insira a senha de administrador:");
+            
+            if (inputPassword !== 'cadastrarAdmin1234') {
+                alert('Senha de administrador incorreta!');
+                return;
+            }
 
-    const url = `${supabaseUrl}/rest/v1/users?columns=%22email%22%2C%22password%22%2C%22nome%22%2C%22curso%22%2C%22validade%22%2C%22cpf%22%2C%22numeroTel%22%2C%22dataNascimento%22%2C%22fotoUrl%22`;
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qanVtdGt4Y3FiZGJ5bnptcXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg3MTA3NTIsImV4cCI6MjAzNDI4Njc1Mn0.1Bfat4NXHJjTFZf-RV6fFUNr56kVqjwetH4ROWBDEuE', // Use a sua chave de acesso aqui
-        },
-        body: JSON.stringify({ email, password, nome, curso, validade, cpf, dataNascimento, numeroTel, fotoUrl}),
-    });
+            const email = event.target.email.value;
+            const password = event.target.password.value;
+            const nome = event.target.nome.value;
+            const curso = event.target.curso.value;
+            const cpf = event.target.cpf.value;
+            const numeroTel = event.target.numeroTel.value;
+            const dataNascimento = event.target.dataNascimento.value;
+            const validade = event.target.validade.value;
+            const fotoUrl = event.target.fotoUrl.value;
 
-    if (response.ok) {
-        alert('Usuário cadastrado com sucesso!');
-    } else {
-        const data = await response.json(); 
-        alert('Error: ' + data.error);
-    }
+            const url = `${supabaseUrl}/rest/v1/users`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': apiKey,
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({ email, password, nome, curso, validade, cpf, dataNascimento, numeroTel, fotoUrl }),
+            });
 
-});
+            if (response.ok) {
+                alert('Usuário cadastrado com sucesso!');
+                loadUsers(); // Carregar a lista de usuários após o cadastro
+            } else {
+                const data = await response.json();
+                alert('Erro: ' + data.error);
+            }
+        });
 
+        // Função para carregar a lista de usuários
+        async function loadUsers() {
+            const url = `${supabaseUrl}/rest/v1/users?select=*`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': apiKey,
+                    'Authorization': `Bearer ${apiKey}`
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const userList = document.getElementById('userList');
+                userList.innerHTML = ''; // Limpar a lista de usuários
+                data.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.innerHTML = `
+                        <p><strong>Nome:</strong> ${user.nome}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>Curso:</strong> ${user.curso}</p>
+                        <p><strong>CPF:</strong> ${user.cpf}</p>
+                        <p><strong>Data de Nascimento:</strong> ${user.dataNascimento}</p>
+                        <p><strong>Número de Telefone:</strong> ${user.numeroTel}</p>
+                        <p><strong>Campus:</strong> ${user.campus}</p>
+                        <p><strong>Validade:</strong> ${user.validade}</p>
+                        <img src="${user.fotoUrl}" alt="Foto do Usuário" style="max-width: 200px;">
+                        <button onclick="deleteUser('${user.id}')">Excluir</button>
+                        <hr>
+                    `;
+                    userList.appendChild(userItem);
+                });
+            } else {
+                alert('Erro ao carregar a lista de usuários');
+            }
+        }
+
+        // Função para excluir um usuário
+        async function deleteUser(id) {
+
+
+            const inputPassword = prompt("Por favor, insira a senha de administrador:");
+            
+            if (inputPassword !== 'excluirAdmin1234') {
+                alert('Senha de administrador incorreta!');
+                return;
+            }
+
+
+            const url = `${supabaseUrl}/rest/v1/users?id=eq.${id}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': apiKey,
+                    'Authorization': `Bearer ${apiKey}`
+                },
+            });
+
+            if (response.ok) {
+                alert('Usuário excluído com sucesso!');
+                loadUsers(); // Carregar a lista de usuários após a exclusão
+            } else {
+                alert('Erro ao excluir o usuário');
+            }
+        }
+
+        // Carregar a lista de usuários quando a página for carregada
+        window.onload = () => {
+            if (checkAdminPassword()) {
+                loadUsers();
+            }
+        };
     </script>
 </body>
-</html>
