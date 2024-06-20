@@ -16,11 +16,17 @@
         <label for="email">Email:</label>
         <input type="text" id="email" name="email" required>
         <br>
+        <label for="nomePerfil">Nome Perfil:</label>
+        <input type="text" id="nomePerfil" name="nomePerfil" required>
+        <br>
         <label for="password">Senha:</label>
         <input type="password" id="password" name="password" required>
         <br>
         <label for="curso">Curso:</label>
         <input type="text" id="curso" name="curso" required>
+        <br>
+        <label for="matricula">Matrícula</label>
+        <input type="text" id="matricula" name="matricula" required>
         <br>
         <label for="cpf">CPF:</label>
         <input type="text" id="cpf" name="cpf" required>
@@ -67,7 +73,7 @@
         document.getElementById('registerForm').addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const inputPassword = prompt("Por favor, insira a senha de administrador:");
+           const inputPassword = prompt("Por favor, insira a senha de administrador:");
             
             if (inputPassword !== 'cadastrarAdmin1234') {
                 alert('Senha de administrador incorreta!');
@@ -77,7 +83,10 @@
             const email = event.target.email.value;
             const password = event.target.password.value;
             const nome = event.target.nome.value;
+            const nomePerfil = event.target.nomePerfil.value;
             const curso = event.target.curso.value;
+            const campus = event.target.campus.value;
+            const matricula = event.target.matricula.value;
             const cpf = event.target.cpf.value;
             const numeroTel = event.target.numeroTel.value;
             const dataNascimento = event.target.dataNascimento.value;
@@ -92,7 +101,7 @@
                     'apikey': apiKey,
                     'Authorization': `Bearer ${apiKey}`
                 },
-                body: JSON.stringify({ email, password, nome, curso, validade, cpf, dataNascimento, numeroTel, fotoUrl }),
+                body: JSON.stringify({ email, password, nome, nomePerfil, campus, curso, matricula, validade, cpf, dataNascimento, numeroTel, fotoUrl }),
             
             });
 
@@ -126,13 +135,9 @@
                     userItem.innerHTML = `
                         <p><strong>Nome:</strong> ${user.nome}</p>
                         <p><strong>Email:</strong> ${user.email}</p>
-                        <p><strong>Curso:</strong> ${user.curso}</p>
-                        <p><strong>CPF:</strong> ${user.cpf}</p>
-                        <p><strong>Data de Nascimento:</strong> ${user.dataNascimento}</p>
                         <p><strong>Número de Telefone:</strong> ${user.numeroTel}</p>
-                        <p><strong>Campus:</strong> ${user.campus}</p>
                         <p><strong>Validade:</strong> ${user.validade}</p>
-                        <img src="${user.fotoUrl}" alt="Foto do Usuário" style="max-width: 200px;">
+                        <img src="${user.fotoUrl}" alt="Foto do Usuário" style="max-width: 50px;">
                         <button onclick="deleteUser('${user.id}')">Excluir</button>
                         <hr>
                     `;
@@ -173,7 +178,7 @@
             }
         }
 
-        // Carregar a lista de usuários quando a página for carregada
+        //Carregar a lista de usuários quando a página for carregada
         window.onload = () => {
             if (checkAdminPassword()) {
                 loadUsers();

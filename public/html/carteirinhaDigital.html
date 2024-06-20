@@ -47,20 +47,28 @@
         </div>
         <section>
             <h2>Meu perfil</h2>
-            <div>
-                <div></div>
-                <div></div>
-                <div></div>
+            <div class="conteinerBtnsPerfil">
+                <div class="btnsPerfil">
+                    <img src="https://cdn-icons-png.flaticon.com/128/2859/2859361.png" alt="iconMeusDados">
+                    <p>Meus dados</p>
+                </div>
+                <div class="btnsPerfil">
+                    <img src="https://cdn-icons-png.flaticon.com/128/2319/2319201.png" alt="iconMeusDados">
+                    <p>Privacidade</p>
+                </div>
+                <div class="btnsPerfil">
+                    <img src="https://cdn-icons-png.flaticon.com/128/1947/1947270.png" alt="iconMeusDados">
+                    <p>Envio de  documentação</p>
+                </div>
             </div>
         </section>
         <footer>
-            <p>Versão do app</p>
-            <p>Sair do APP</p>
+            <p class="textC versaoApp">Versão do Aplicativo 5.29.0.</p>
+            <p class="textC sairApp">Sair do APP</p>
             <a href="/cadastroUsu.html" title="cadastro Usuário">
                 <p>Cadastro User</p>
             </a>
         </footer>
-
 
         <nav>
             <div></div>
@@ -89,7 +97,7 @@
     // Recupera as informações do usuário do localStorage e exibe na página
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo) {
-        document.getElementById('nome').innerHTML = `${userInfo.nome} `;
+        document.getElementById('nome').innerHTML = `${userInfo.nomePerfil} `;
         document.getElementById('email').innerHTML = `${userInfo.email} `;
         document.getElementById('imgUsu').src = userInfo.fotoUrl;
         document.getElementById('numeroTel').innerHTML = formatNumeroTel(userInfo.numeroTel);
