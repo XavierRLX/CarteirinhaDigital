@@ -33,7 +33,7 @@
     <section class="parteBranca">
         <div class="cardBottom">
             <div class="cardBottomMatricula">
-                <p>Matricula</p>
+                <p>Matrícula</p>
                 <p id="matricula">n matricula</p>
             </div>
             <div class="cardBottomValidade">
@@ -41,7 +41,10 @@
                 <p id="validade">dt validade</p>
             </div>
         </div>
-        <p>Acessar Carteira</p>
+        <div class="containerAcessarCarteirinha">
+            <img id="iconAC" src="https://cdn-icons-png.flaticon.com/128/7778/7778088.png" alt="iconAC">
+            <p id="acessarCarteirinha">Acessar Carteirinha</p>
+        </div>
         <section>
             <h2>Meu perfil</h2>
             <div>
@@ -71,15 +74,28 @@
 
 <!-- S2Ab44TLNk5JG7mF senha supabse -->
 <script>
+    // Função para formatar o número de telefone
+    function formatNumeroTel(numeroTel) {
+        numeroTel = String(numeroTel).replace(/\D/g, ''); // Converte para string e remove todos os caracteres não numéricos
+        return numeroTel.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3'); // Formata o número
+    }
+
+    //Função para formatar o número matrícula
+    function formatMatricula(matricula) {
+        matricula = String(matricula).replace(/\D/g, ''); 
+        return matricula.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3');
+    }
+
     // Recupera as informações do usuário do localStorage e exibe na página
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo) {
-        document.getElementById('nome').innerHTML = `${userInfo.nome} `
-        document.getElementById('email').innerHTML = `${userInfo.email} `
-        document.getElementById('imgUsu').src = `${userInfo.fotoUrl} `
-        document.getElementById('numeroTel').innerHTML = `${userInfo.numeroTel} `
-        document.getElementById('curso').innerHTML = `${userInfo.curso} `
-        document.getElementById('nome').innerHTML = `${userInfo.nome} `
+        document.getElementById('nome').innerHTML = `${userInfo.nome} `;
+        document.getElementById('email').innerHTML = `${userInfo.email} `;
+        document.getElementById('imgUsu').src = userInfo.fotoUrl;
+        document.getElementById('numeroTel').innerHTML = formatNumeroTel(userInfo.numeroTel);
+        document.getElementById('curso').innerHTML = `${userInfo.curso} `;
+        document.getElementById('validade').innerHTML = `${userInfo.validade} `;
+        document.getElementById('matricula').innerHTML = formatMatricula(userInfo.matricula);
     } else {
         alert('Informações do usuário não encontradas');
         window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
