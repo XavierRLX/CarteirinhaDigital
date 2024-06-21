@@ -136,4 +136,42 @@ header > section > div.iconsImg {
 .sairApp{
     font-weight: 500;
     color: #144bc9;
+    margin-bottom: 70px;
+}
+
+/* Estilo para o menu */
+#menu {
+    position: fixed;
+    bottom: 0;
+    width: 500px;
+    margin: 0 0 0 -19px;
+    background-color: #fff; /* Cor de fundo do menu */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0; /* Adiciona um pouco de padding vertical */
+    z-index: 1000; /* Garante que o menu fique acima de outros elementos */
+}
+
+/* Estilo para os botões do menu */
+.btnFooter {
+    text-align: center;
+    padding: 5px 5px;
+}
+
+.btnFooter img {
+    width: 24px; /* Tamanho máximo da imagem */
+    height: 24px;
+    display: block;
+    margin: 0 auto; /* Centraliza a imagem */
+    padding-bottom: 5px;
+}
+
+.btnFooter p {
+    margin: 5px 0 0; /* Margem para o texto */
+    font-size: 14px; /* Tamanho da fonte */
+}
+
+#btnPertil{
+    color: #144bc9;
 }
