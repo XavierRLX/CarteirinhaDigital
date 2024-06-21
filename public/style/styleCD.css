@@ -113,8 +113,8 @@ header > section > div.iconsImg {
 }
 
 .btnsPerfil{
-    width: 180px;
-    height: 180px;
+    width: 120px;
+    height: 120px;
     padding: 20px;
     background-color: #fff;
     border-radius: 15px;
@@ -171,7 +171,10 @@ header > section > div.iconsImg {
     margin: 5px 0 0; /* Margem para o texto */
     font-size: 14px; /* Tamanho da fonte */
 }
+#btnPerfil {
+    filter: brightness(0) invert(1); 
+}
 
-#btnPertil{
+#btnPertil > p{
     color: #144bc9;
 }
