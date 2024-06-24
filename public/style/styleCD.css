@@ -1,6 +1,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
+:root {
+    --corAzul: #144bc9;
+    --corLetraCinza: #919090;
+}
+
 body {
     max-width: 600px;
     margin: 0 auto;
@@ -73,7 +78,7 @@ header > section > div.iconsImg {
     height: 4.9em;
     margin: 0 auto;
     border: solid 2px #fff;
-    background-color: rgba(255, 255, 255, 0.308);
+    background-color: #ffffff4f;
     padding: 30px;
     border-radius: 25px 25px 0 0 ;
 }
@@ -108,11 +113,12 @@ header > section > div.iconsImg {
 #acessarCarteirinha{
     margin-left: 8px;
 }
-
+.btnsPerfilConteiner {
+    font-size: 0.9em;
+}
 .conteinerBtnsPerfil {
   
     display: grid;
-    padding: 20px;
     grid-template-columns: repeat(2, 1fr);
     gap: 25px;
     justify-items: center;
@@ -126,10 +132,11 @@ header > section > div.iconsImg {
     padding: 20px;
     background-color: #fff;
     border-radius: 15px;
-    border: solid 2px #dad7d7;
+    border: solid 2px #ece9e9;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    margin: 5px 0 5px 0;
 }
 
 .btnsPerfil > img {
@@ -149,38 +156,46 @@ header > section > div.iconsImg {
 #menu {
     position: fixed;
     bottom: 0;
-    width: 500px;
-    margin: 0 0 0 -19px;
+    right: 0;
+    width: 100%;
+    height: 5em;
     background-color: #fff; /* Cor de fundo do menu */
+    
+    z-index: 1000; /* Garante que o menu fique acima de outros elementos */
+}
+#menu > section {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0; /* Adiciona um pouco de padding vertical */
-    z-index: 1000; /* Garante que o menu fique acima de outros elementos */
+    padding: 10px;
+    color: var(--corLetraCinza);
 }
-
 /* Estilo para os botões do menu */
-/* .btnFooter {
+.btnFooter {
     text-align: center;
-    padding: 5px 5px;
-} */
+    padding: 5px 8px;
+}
 
-/* .btnFooter img {
-    width: 24px; 
+.btnFooter img {
+    margin-bottom: -8px ;
+} 
+
+#btnIni, #btnSup, #btnCar, #btnFin, #btnPer{
+    width: 24px;
     height: 24px;
-    display: block;
-    margin: 0 auto; 
-    padding-bottom: 5px;
-} */
-/* 
-.btnFooter p {
-    margin: 5px 0 0; /* Margem para o texto */
-    /* font-size: 14px;
-}
-#btnPerfil {
-    filter: brightness(0) invert(1); 
 }
 
-#btnPertil > p{
+#btnFin{
+    width: 19px;
+}
+#btnCar {
+    height: 26px;
+}
+
+.btnFooter p {
+font-size: 14px;
+}
+
+.btnPerfA {
     color: #144bc9;
-} */
+}
