@@ -96,6 +96,7 @@ header > section > div.iconsImg {
     align-items: center;
     justify-content: space-around;
     font-size: 0.8em;
+    margin-top: -3px;
 }
 .containerAcessarCarteirinha{
     margin: 35px 0 35px 0;
