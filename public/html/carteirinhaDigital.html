@@ -65,9 +65,7 @@
         </section>
         <footer>
             <p class="textC versaoApp">Versão do Aplicativo 5.29.0.</p>
-            <p class="textC sairApp">Sair do APP</p>
-            <a href="/cadastroUsu.html" title="cadastro Usuário">
-                <p>Cadastro User</p>
+            <a href="/login" title="cadastro Usuário" ><p class="textC sairApp">Sair do APP</p></a>
             </a>
         </footer>
         <nav id="menu">
@@ -96,36 +94,40 @@
             
         </nav>
     </section>
-
-
-    <!-- <section id="modalCarteirinha">
-        <div class="headerCarteirinha">
-            <img src="" alt="fotoPerfil">
-            <p id="nomeCompleto">Nome</p>
+    
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span id="closeModalBtn" class="close">SAIR</span>
+            <section id="modalCarteirinha">
+                <div class="headerCarteirinha">
+                    <img src="" alt="fotoPerfil">
+                    <p id="nomeCompleto">Nome</p>
+                </div>
+        
+                <div class="modaldadosCarteirinha">
+                    <div>
+                        <p>CPF</p>
+                        <p>9999999</p>
+                    </div>
+                    <div>
+                        <p>Nascimento</p>
+                        <p></p>
+                    </div>
+                    <div>
+                        <p>Matrícula</p>
+                        <p>9999999</p>
+                    </div>
+                    <div>
+                        <p>Validade</p>
+                        <p>jun 2024</p>
+                    </div>
+                </div>
+            </section>
         </div>
-
-        <div class="modaldadosCarteirinha">
-            <div>
-                <p>CPF</p>
-                <p>9999999</p>
-            </div>
-            <div>
-                <p>Nascimento</p>
-                <p></p>
-            </div>
-            <div>
-                <p>Matrícula</p>
-                <p>9999999</p>
-            </div>
-            <div>
-                <p>Validade</p>
-                <p>jun 2024</p>
-            </div>
-        </div>
-    </section> -->
+    </div>
 </body>
 
-<!-- S2Ab44TLNk5JG7mF senha supabse -->
+<!--S2Ab44TLNk5JG7mF senha supabse -->
 <script>
     // Função para formatar o número de telefone
     function formatNumeroTel(numeroTel) {
@@ -153,6 +155,26 @@
         alert('Informações do usuário não encontradas');
         window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
     }
+
+    document.getElementById('acessarCarteirinha').addEventListener('click', function() {
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('menu').style.display = 'none'
+});
+
+document.getElementById('closeModalBtn').addEventListener('click', function() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('menu').style.display = 'inline'
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target === document.getElementById('modal')) {
+        document.getElementById('modal').style.display = 'none';
+    }
+});
+
+
+
+
 </script>
 
 </html>

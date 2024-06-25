@@ -200,3 +200,41 @@ font-size: 14px;
 .btnPerfA {
     color: #144bc9;
 }
+
+
+:root {
+    --modal-max-width: 600px;
+}
+
+.modal {
+    display: none; /* Escondido por padrão */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro semitransparente */
+}
+
+.modal-content {
+    background-image: url('https://scontent.fstu4-1.fna.fbcdn.net/v/t39.30808-6/448945850_7810135779101668_6921099502890091849_n.jpg?stp=dst-jpg_p526x296&_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGu5RSq4Cc_qAET6q4fKN9FJEAoQ8sOsGMkQChDyw6wY_7hsTALb-1ryxm-a-srhw2DAxlgt3OJM4j1Wb_RGKU0&_nc_ohc=t8Rqe7nzL8YQ7kNvgHoeXUj&_nc_ht=scontent.fstu4-1.fna&oh=00_AYDmeTUmsKVQAqGMVter0d858mwAEmTH7cdR5vBWrMqRtw&oe=66809667'); /* Link da imagem de papel de parede */
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    max-width: var(--modal-max-width);
+    height: 100%;
+    position: relative;
+}
+
+.modal-content p {
+    color: white;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
