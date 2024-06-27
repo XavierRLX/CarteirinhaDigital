@@ -4,6 +4,7 @@
 :root {
     --corAzul: #144bc9;
     --corLetraCinza: #919090;
+    --corBlack: #000
 }
 
 body {
@@ -17,6 +18,16 @@ body {
 }
 .textC {
     text-align: center;
+}
+.flex {
+    display: flex;
+}
+
+.corP {
+    color: var(--corBlack);
+}
+.corC{
+    color: var(--corLetraCinza);
 }
  .parteAzul {
     background-color: #144bc9 ;
@@ -207,7 +218,7 @@ font-size: 14px;
 }
 
 .modal {
-
+    display: none;
     position: fixed; 
     top: 0;
     left: 0;
@@ -224,10 +235,8 @@ font-size: 14px;
     max-width: var(--modal-max-width);
     height: 100%;
     position: relative;
-}
+    font-size: 0.9em;
 
-.modal-content p {
-    color:var(--corLetraCinza);
 }
 
 .close {
@@ -241,4 +250,39 @@ font-size: 14px;
 
 .close img {
     width: 15px;
+}
+
+#modalCarteirinha{
+    padding-top: 3em;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+}
+
+#imgModal {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+#fotoUrlModal {
+    width: 4em;
+    height: 4em;
+    border-radius: 50%;
+}
+
+.grupoA{
+    width: 400px;
+    display: flex;
+    justify-content: space-between;
+}
+.grupoB {
+    width: 400px;
+}
+
+.footerModal img{
+    margin-top: 30px;
+    width: 9em;
 }
