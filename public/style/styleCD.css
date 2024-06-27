@@ -207,7 +207,7 @@ font-size: 14px;
 }
 
 .modal {
-    display: none; /* Escondido por padrão */
+
     position: fixed; 
     top: 0;
     left: 0;
@@ -227,14 +227,18 @@ font-size: 14px;
 }
 
 .modal-content p {
-    color: white;
+    color:var(--corLetraCinza);
 }
 
 .close {
     position: absolute;
-    top: 10px;
-    right: 20px;
+    top: 20px;
+    left: 20px;
     color: white;
     font-size: 30px;
     cursor: pointer;
+}
+
+.close img {
+    width: 15px;
 }

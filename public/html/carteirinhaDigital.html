@@ -97,30 +97,48 @@
     
     <div id="modal" class="modal">
         <div class="modal-content">
-            <span id="closeModalBtn" class="close">SAIR</span>
+            <span id="closeModalBtn" class="close">
+                <img src="https://scontent.frao7-1.fna.fbcdn.net/v/t39.30808-6/449121010_7816067515175161_8474247557375418408_n.jpg?stp=cp0_dst-jpg&_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeHIRPbpHJgBR6m_uCOr2nquAEWPiY2s_rsARY-Jjaz-u7Ixkx7x_KgMJ7B7VHe3PXCTfqtXtO6cajwMbZOmRZ8t&_nc_ohc=BIfBQJKQhagQ7kNvgF-U_un&_nc_ht=scontent.frao7-1.fna&oh=00_AYDjL2T50mHzHRKOyyUz7q7ufvRy8AoYyRn8dwKFW6vfbA&oe=668237BA" alt="">
+            </span>
             <section id="modalCarteirinha">
+                <div>
+                    <img id="fotoUrlModal" src="" alt="fotoEstudante">
+                </div>
                 <div class="headerCarteirinha">
-                    <img src="" alt="fotoPerfil">
-                    <p id="nomeCompleto">Nome</p>
+                    <p id="nomeCompletoModal">Nome</p>
                 </div>
         
                 <div class="modaldadosCarteirinha">
                     <div>
+                    <div>
                         <p>CPF</p>
-                        <p>9999999</p>
+                        <p id="cpfModal">9999999</p>
                     </div>
                     <div>
                         <p>Nascimento</p>
-                        <p></p>
+                        <p id="dataNascimentoModal"></p>
                     </div>
+                </div>
+                <div>
                     <div>
                         <p>Matrícula</p>
-                        <p>9999999</p>
+                        <p id="matriculaModal">9999999</p>
                     </div>
                     <div>
-                        <p>Validade</p>
-                        <p>jun 2024</p>
+                        <p >Validade</p>
+                        <p id="validadeModal">jun 2024</p>
                     </div>
+                </div>
+                <div>
+                    <div>
+                        <p>Curso (Ativo)</p>
+                        <p id="cursoModal"></p>
+                    </div>
+                    <div>
+                        <p>Campus</p>
+                        <p id="campusModal"></p>
+                    </div>
+                </div>
                 </div>
             </section>
         </div>
@@ -155,6 +173,18 @@
         alert('Informações do usuário não encontradas');
         window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
     }
+
+    const  userInfoModal = JSON.parse(localStorage.getItem('userInfo'));
+    if (userInfo) {
+        document.getElementById('fotoUrlModal').src = `${userInfoModal.fotoUrl}`
+        document.getElementById('nomeCompletoModal').innerHTML = `${userInfoModal.nome}`
+        document.getElementById('cpfModal').innerHTML = `${userInfoModal.cpf}`
+        document.getElementById('dataNascimentoModal').innerHTML = `${userInfoModal.dataNascimento}`
+        document.getElementById('matriculaModal').innerHTML = `${userInfoModal.matricula}`
+        document.getElementById('validadeModal').innerHTML = `${userInfoModal.validade}`
+        document.getElementById('cursoModal').innerHTML = `${userInfoModal.curso}`
+        document.getElementById('campusModal').innerHTML = `${userInfoModal.campus}`
+        }
 
     document.getElementById('acessarCarteirinha').addEventListener('click', function() {
     document.getElementById('modal').style.display = 'flex';
