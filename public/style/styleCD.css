@@ -160,8 +160,12 @@ header > section > div.iconsImg {
 }
 .sairApp{
     font-weight: 500;
-    color: #144bc9;
-    margin-bottom: 70px;
+    color: var(--corAzul);
+    margin-bottom: 100px;
+}
+
+a {
+    text-decoration: none;
 }
 
 /* Estilo para o menu */
@@ -218,7 +222,7 @@ font-size: 14px;
 }
 
 .modal {
-    display: none;
+    /* display: none; */
     position: fixed; 
     top: 0;
     left: 0;
@@ -259,27 +263,28 @@ font-size: 14px;
     justify-content: space-around;
     align-items: center;
     flex-direction: column;
+    font-weight: 500;
 }
 
 #imgModal {
     text-align: center;
-    font-weight: 500;
+    
     font-size: 1em;
 }
 
 #fotoUrlModal {
-    width: 4em;
-    height: 4em;
+    width: 6em;
+    height:6em;
     border-radius: 50%;
 }
 
 .grupoA{
-    width: 400px;
+    width: 80%;
     display: flex;
     justify-content: space-between;
 }
 .grupoB {
-    width: 400px;
+    width: 80%;
 }
 
 .footerModal img{
