@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // Servindo arquivos estáticos
 app.use('/style', express.static(path.join(__dirname, 'public/style')));
-app.use('/style', express.static(path.join(__dirname, 'public/img')));
+app.use('/javaScript', express.static(path.join(__dirname, 'public/javaScript')));
 
 // Definindo rotas dinamicamente
 const routes = [

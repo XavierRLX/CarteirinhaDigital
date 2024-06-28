@@ -157,92 +157,10 @@
         </div>
     </div>
     </div>
+<script src="/javaScript/formatacao.js"></script>
+<script src="/javaScript/dadosUser.js"></script>
+<script src="/javaScript/modalCarteirinha.js"></script>
 </body>
 
-<!--S2Ab44TLNk5JG7mF senha supabse -->
-<script>
-    // Função para formatar o número de telefone
-    function formatNumeroTel(numeroTel) {
-        numeroTel = String(numeroTel).replace(/\D/g, ''); // Converte para string e remove todos os caracteres não numéricos
-        return numeroTel.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3'); // Formata o número
-    }
-
-    //Função para formatar o número matrícula
-    function formatMatricula(matricula) {
-        matricula = String(matricula).replace(/\D/g, '');
-        return matricula.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3');
-    }
-
-    function formatCPF(cpf) {
-    cpf = String(cpf).replace(/\D/g, '');
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-}
-
-function formatValidade(validade) {
-    // Meses abreviados em inglês
-    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    // Divide a string de data em partes [ano, mês, dia]
-    const [year, month, day] = validade.split('-');
-    // Retorna o mês abreviado e o ano
-    return `${months[parseInt(month) - 1]} ${year}`;
-}
-
-function formatDate(dateString) {
-    // Meses abreviados em inglês
-    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    // Divide a string de data em partes [ano, mês, dia]
-    const [year, month, day] = dateString.split('-');
-    // Retorna o dia, mês abreviado e o ano
-    return `${day} ${months[parseInt(month) - 1]} ${year}`;
-}
-
-
-    // Recupera as informações do usuário do localStorage e exibe na página
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo) {
-        document.getElementById('nome').innerHTML = `${userInfo.nomePerfil} `;
-        document.getElementById('email').innerHTML = `${userInfo.email} `;
-        document.getElementById('imgUsu').src = userInfo.fotoUrl;
-        document.getElementById('numeroTel').innerHTML = formatNumeroTel(userInfo.numeroTel);
-        document.getElementById('curso').innerHTML = `${userInfo.curso} `;
-        document.getElementById('validade').innerHTML = formatValidade(userInfo.validade);
-        document.getElementById('matricula').innerHTML = formatMatricula(userInfo.matricula);
-    } else {
-        alert('Informações do usuário não encontradas');
-        window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
-    }
-
-    const userInfoModal = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo) {
-        document.getElementById('fotoUrlModal').src = `${userInfoModal.fotoUrl}`
-        document.getElementById('nomeCompletoModal').innerHTML = `${userInfoModal.nome}`
-        document.getElementById('cpfModal').innerHTML = formatCPF(userInfo.cpf);
-        document.getElementById('dataNascimentoModal').innerHTML = formatDate(userInfo.dataNascimento);
-        document.getElementById('matriculaModal').innerHTML = formatMatricula(userInfo.matricula);
-        document.getElementById('validadeModal').innerHTML = formatValidade(userInfo.validade);
-        document.getElementById('cursoModal').innerHTML = `${userInfoModal.curso}`
-        document.getElementById('campusModal').innerHTML = `${userInfoModal.campus}`
-    }
-
-    document.getElementById('acessarCarteirinha').addEventListener('click', function () {
-        document.getElementById('modal').style.display = 'flex';
-        document.getElementById('menu').style.display = 'none'
-    });
-
-    document.getElementById('closeModalBtn').addEventListener('click', function () {
-        document.getElementById('modal').style.display = 'none';
-        document.getElementById('menu').style.display = 'inline'
-    });
-
-    window.addEventListener('click', function (event) {
-        if (event.target === document.getElementById('modal')) {
-            document.getElementById('modal').style.display = 'none';
-        }
-    });
-
-
-
-
-</script>
 
 </html>
