@@ -7,6 +7,7 @@ function checkAdminPassword() {
     const inputPassword = prompt("Por favor, insira a senha de administrador:");
     if (inputPassword !== adminPassword) {
         alert('Senha de administrador incorreta!');
+        window.onload('/login');
         return false;
     }
     enteredPassword = inputPassword;
