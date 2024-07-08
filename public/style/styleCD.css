@@ -216,6 +216,16 @@ font-size: 14px;
     color: #144bc9;
 }
 
+.aviso {
+
+    margin-bottom: 130px;
+    box-shadow: 0px 5px 20px -5px rgba(0, 0, 0, 0.5);
+    background-color: rgb(240, 102, 102);
+    padding: 10px;
+    border-radius: 15px;
+}
+
+
 
 :root {
     --modal-max-width: 600px;

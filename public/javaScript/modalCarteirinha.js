@@ -13,3 +13,10 @@ window.addEventListener('click', function (event) {
         document.getElementById('modal').style.display = 'none';
     }
 });
+
+
+//Aviso 
+
+document.getElementById('btnAviso').addEventListener('click', function(){
+    document.getElementById('aviso').style.display = 'none';
+})
