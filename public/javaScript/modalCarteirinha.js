@@ -1,6 +1,7 @@
+
 document.getElementById('acessarCarteirinha').addEventListener('click', function () {
     document.getElementById('modal').style.display = 'flex';
-    document.getElementById('menu').style.display = 'none'
+    document.getElementById('menu').style.display = 'none';
 });
 
 document.getElementById('closeModalBtn').addEventListener('click', function () {
@@ -16,7 +17,6 @@ window.addEventListener('click', function (event) {
 
 
 //Aviso 
-
 document.getElementById('btnAviso').addEventListener('click', function(){
     document.getElementById('aviso').style.display = 'none';
-})
+});

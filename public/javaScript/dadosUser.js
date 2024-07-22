@@ -11,7 +11,7 @@
  } else {
      alert('Informações do usuário não encontradas');
      window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
- }
+ } ;
 
  const userInfoModal = JSON.parse(localStorage.getItem('userInfo'));
  if (userInfo) {
@@ -23,4 +23,11 @@
      document.getElementById('validadeModal').innerHTML = formatValidade(userInfo.validade);
      document.getElementById('cursoModal').innerHTML = `${userInfoModal.curso}`
      document.getElementById('campusModal').innerHTML = `${userInfoModal.campus}`
- }
+ } ;
+
+ document.getElementById('acessarCarteirinha').addEventListener('click', () => {
+    const nome = userInfo.nomePerfil;
+    const data = new Date().toLocaleDateString('pt-BR'); // Data no formato brasileiro
+    const hora = new Date().toLocaleTimeString('pt-BR'); // Hora no formato brasileiro
+    sendEmailUse(nome, data, hora);
+  });
