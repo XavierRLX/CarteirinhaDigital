@@ -1,9 +1,10 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
-const path = require('path');
+const bodyParser = require('body-parser');
+const app = express();
 
-const router = express.Router();
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // Configuração do transporte
 const transport = nodemailer.createTransport({
@@ -35,7 +36,7 @@ const sendEmail = async (toEmail, subject, htmlContent) => {
   }
 };
 
-router.post('/useCarterinha', async (req, res, next) => {
+app.post('/useCarteirinha', async (req, res, next) => {
   try {
     const { toEmail, nome, data, hora } = req.body;
 
@@ -43,7 +44,7 @@ router.post('/useCarterinha', async (req, res, next) => {
     const EmailUse = fs.readFileSync(emailTemplatePath, 'utf-8');
     const personalizeEmail = EmailUse.replace('{{nome}}', nome).replace('{{data}}', data).replace('{{hora}}', hora);
 
-    await sendEmail(toEmail, 'Carterinha Digital - Acesso', personalizeEmail);
+    await sendEmail(toEmail, 'Carteirinha Digital - Acesso', personalizeEmail);
 
     res.send('Enviado');
   } catch (err) {
@@ -51,4 +52,4 @@ router.post('/useCarterinha', async (req, res, next) => {
   }
 });
 
-module.exports = router;
+module.exports = app;

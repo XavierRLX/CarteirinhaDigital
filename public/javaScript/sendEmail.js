@@ -1,6 +1,8 @@
 function sendEmailUse(nome, data, hora) {
     const email = "renanlima2000.aer@gmail.com";
-    fetch('/email/useCarterinha', {
+    console.log('Dados para envio:', { email, nome, data, hora });
+  
+    fetch('/email/useCarteirinha', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'

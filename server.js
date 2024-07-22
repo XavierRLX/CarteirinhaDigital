@@ -2,12 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const emailRoutes = require('./Routes/emailRoutes');
+const app = express();
+const port = 3000;
 
 app.use('/email', emailRoutes);
 app.post('/email/sendEmailUse', emailRoutes);
 
-const app = express();
-const port = 3000;
+
 
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
