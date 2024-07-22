@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
 const router = express.Router();
+const axios = require('axios');
 
 router.use(bodyParser.urlencoded({ extended: false }));
 
@@ -39,13 +40,20 @@ const sendEmail = async (toEmail, subject, htmlContent) => {
 
 router.post('/useCarteirinha', async (req, res, next) => {
   try {
-    const { toEmail, nome, data, hora } = req.body;
-    console.log('Dados recebidos:', { toEmail, nome, data, hora });
+    const { toEmail, nome, data, hora, street, neighborhood, city, state, country } = req.body;
+    console.log('Dados recebidos:', { toEmail, nome, data, hora, street, neighborhood, city, state, country });
 
-    const EmailUse = fs.readFileSync(__dirname + '/ModelsEmails/modelUse.html', 'utf-8');
-    const personalizeEmail = EmailUse.replace('{{nome}}', nome).replace('{{data}}', data).replace('{{hora}}', hora);
+    let EmailUse = fs.readFileSync(__dirname + '/ModelsEmails/modelUse.html', 'utf-8');
+    EmailUse = EmailUse.replace('{{nome}}', nome)
+                        .replace('{{data}}', data)
+                        .replace('{{hora}}', hora)
+                        .replace('{{street}}', street)
+                        .replace('{{neighborhood}}', neighborhood)
+                        .replace('{{city}}', city)
+                        .replace('{{state}}', state)
+                        .replace('{{country}}', country);
 
-    await sendEmail(toEmail, 'Carteirinha Digital - Acesso', personalizeEmail);
+    await sendEmail(toEmail, 'Carteirinha Digital - Acesso', EmailUse);
 
     res.send('Enviado');
   } catch (err) {
@@ -53,5 +61,7 @@ router.post('/useCarteirinha', async (req, res, next) => {
     next(err);
   }
 });
+
+module.exports = router;
 
 module.exports = router;

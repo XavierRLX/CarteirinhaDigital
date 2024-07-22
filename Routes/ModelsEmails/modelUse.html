@@ -7,9 +7,16 @@
     <title>Document</title>
 </head>
 <body>
-    <header> <h1>Acesso de carteirinha identificado</h1> </header>
-    <p>Nome: {{nome}} </p>
-    <p>Data: {{data}} </p>
-    <p>Hora: {{hora}} </p>
+    <header> <h1>Acesso carteirinha identificado </h1> </header>
+    <p>Olá, Renan. </p>
+    <p> O(a) {{nome}}, acessou a carteirinha digital na data {{data}} às {{hora}}.</p>
+    <p>Sua localização:</p>
+    <ul>
+        <li>Rua: {{street}}</li>
+        <li>Bairro: {{neighborhood}}</li>
+        <li>Cidade: {{city}}</li>
+        <li>Estado: {{state}}</li>
+        <li>País: {{country}}</li>
+    </ul>
 </body>
 </html>

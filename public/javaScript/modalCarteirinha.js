@@ -11,6 +11,7 @@ document.getElementById('acessarCarteirinha').addEventListener('click', () => {
 });
 
 
+
 document.getElementById('closeModalBtn').addEventListener('click', function () {
     document.getElementById('modal').style.display = 'none';
     document.getElementById('menu').style.display = 'inline'

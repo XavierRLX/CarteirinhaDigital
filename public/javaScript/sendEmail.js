@@ -1,13 +1,15 @@
-function sendEmailUse(nome, data, hora, latitude, longitude) {
+function sendEmailUse(nome, data, hora, addressDetails) {
   const email = "renanlima2000.aer@gmail.com";
-  console.log('Dados para envio:', { email, nome, data, hora, latitude, longitude });
+  console.log('Dados para envio:', { email, nome, data, hora, addressDetails });
+
+  const { street, neighborhood, city, state, country } = addressDetails;
 
   fetch('/email/useCarteirinha', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&latitude=${latitude}&longitude=${longitude}`
+    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}`
   })
   .then(response => {
     if (!response.ok) {
@@ -24,71 +26,36 @@ function sendEmailUse(nome, data, hora, latitude, longitude) {
 }
 
 function getLocationAndSendEmail(nome, data, hora) {
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(position => {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    sendEmailUse(nome, data, hora, latitude, longitude);
-  }, error => {
-    console.error('Erro ao obter localização:', error);
-    alert('Ative a localização para acessar a carteirinha.');
-  });
-} else {
-  alert('Geolocalização não é suportada pelo seu navegador.');
-}
-}
-
-function getUserLocation() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition, showError);
+    navigator.geolocation.getCurrentPosition(position => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Dados da localização:', data);
+          const address = data.address;
+          const addressDetails = {
+            street: address.road || 'Desconhecida',
+            neighborhood: address.suburb || address.neighborhood || 'Desconhecido',
+            city: address.city || address.town || address.village || 'Desconhecida',
+            state: address.state || 'Desconhecido',
+            country: address.country || 'Desconhecido'
+          };
+          console.log('Detalhes do Endereço:', addressDetails);
+          sendEmailUse(nome, data, hora, addressDetails);
+        })
+        .catch(error => {
+          console.error('Erro ao obter dados da localização:', error);
+          alert('Erro ao obter dados da localização.');
+        });
+
+    }, error => {
+      console.error('Erro ao obter localização:', error);
+      alert('Ative a localização para acessar a carteirinha.');
+    });
   } else {
-    console.log("Geolocalização não é suportada neste navegador.");
+    alert('Geolocalização não é suportada pelo seu navegador.');
   }
 }
-
-function showPosition(position) {
-  const latitude = position.coords.latitude;
-  const longitude = position.coords.longitude;
-  console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-
-  // Aqui você pode usar a localização como necessário, por exemplo, enviar para o servidor
-  sendLocationToServer(latitude, longitude);
-}
-
-function showError(error) {
-  switch(error.code) {
-    case error.PERMISSION_DENIED:
-      console.log("Usuário recusou a solicitação de geolocalização.");
-      break;
-    case error.POSITION_UNAVAILABLE:
-      console.log("Informações de localização não disponíveis.");
-      break;
-    case error.TIMEOUT:
-      console.log("A solicitação para obter a localização expirou.");
-      break;
-    case error.UNKNOWN_ERROR:
-      console.log("Ocorreu um erro desconhecido.");
-      break;
-  }
-}
-
-function sendLocationToServer(latitude, longitude) {
-  // Envie a localização para o servidor usando fetch ou outra técnica
-  fetch('/saveLocation', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ latitude, longitude })
-  })
-  .then(response => response.text())
-  .then(message => {
-    console.log('Localização enviada:', message);
-  })
-  .catch(error => {
-    console.error('Erro ao enviar localização:', error);
-  });
-}
-
-// Chame getUserLocation quando necessário
-getUserLocation();
