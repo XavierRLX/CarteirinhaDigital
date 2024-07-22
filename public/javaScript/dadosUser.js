@@ -25,9 +25,9 @@
      document.getElementById('campusModal').innerHTML = `${userInfoModal.campus}`
  } ;
 
- document.getElementById('acessarCarteirinha').addEventListener('click', () => {
-    const nome = userInfo.nomePerfil;
-    const data = new Date().toLocaleDateString('pt-BR'); // Data no formato brasileiro
-    const hora = new Date().toLocaleTimeString('pt-BR'); // Hora no formato brasileiro
-    sendEmailUse(nome, data, hora);
-  });
+//  document.getElementById('acessarCarteirinha').addEventListener('click', () => {
+//     const nome = userInfo.nomePerfil;
+//     const data = new Date().toLocaleDateString('pt-BR');
+//     const hora = new Date().toLocaleTimeString('pt-BR'); 
+//     sendEmailUse(nome, data, hora);
+//   });
