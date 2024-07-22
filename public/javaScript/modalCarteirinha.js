@@ -10,7 +10,9 @@ document.getElementById('acessarCarteirinha').addEventListener('click', () => {
     getLocationAndSendEmail(nome, data, hora);
 });
 
-
+document.getElementById('acessarCarteirinha').addEventListener('click', () => {
+    getLocationAndSendEmail();
+  });
 
 document.getElementById('closeModalBtn').addEventListener('click', function () {
     document.getElementById('modal').style.display = 'none';

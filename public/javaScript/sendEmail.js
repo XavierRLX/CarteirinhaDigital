@@ -54,6 +54,7 @@ function getLocationAndSendEmail(nome, data, hora) {
     }, error => {
       console.error('Erro ao obter localização:', error);
       alert('Ative a localização para acessar a carteirinha.');
+      
     });
   } else {
     alert('Geolocalização não é suportada pelo seu navegador.');
