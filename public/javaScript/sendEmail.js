@@ -1,43 +1,29 @@
-document.getElementById('acessarCarteirinha').addEventListener('click', () => {
-  const nome = userInfo.nomePerfil;
-  const data = new Date().toLocaleDateString('pt-BR');
-  const hora = new Date().toLocaleTimeString('pt-BR');
+function sendEmailUse(nome, data, hora, addressDetails) {
+  const email = "renanlima2000.aer@gmail.com";
+  console.log('Dados para envio:', { email, nome, data, hora, addressDetails });
 
-  if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
+  const { street, neighborhood, city, state, country } = addressDetails;
 
-          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
-              .then(response => response.json())
-              .then(data => {
-                  const address = data.address;
-                  const addressDetails = {
-                      street: address.road || 'Desconhecida',
-                      neighborhood: address.suburb || address.neighborhood || 'Desconhecido',
-                      city: address.city || address.town || address.village || 'Desconhecida',
-                      state: address.state || 'Desconhecido',
-                      country: address.country || 'Desconhecido'
-                  };
-                  sendEmailUse(nome, data, hora, addressDetails);
-
-                  // Mostrar o modal somente após obter a localização
-                  document.getElementById('modal').style.display = 'flex';
-                  document.getElementById('menu').style.display = 'none';
-              })
-              .catch(error => {
-                  console.error('Erro ao obter dados da localização:', error);
-                  alert('Erro ao obter dados da localização.');
-              });
-
-      }, error => {
-          console.error('Erro ao obter localização:', error);
-          alert('Ative a localização para acessar a carteirinha.');
-      });
-  } else {
-      alert('Geolocalização não é suportada pelo seu navegador.');
-  }
-});
+  fetch('/email/useCarteirinha', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}`
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Erro no envio do email');
+    }
+    return response.text();
+  })
+  .then(message => {
+    console.log('Email enviado:', message);
+  })
+  .catch(error => {
+    console.error('Erro no envio do email:', error);
+  });
+}
 
 function getLocationAndSendEmail(nome, data, hora) {
   if (navigator.geolocation) {
@@ -68,7 +54,6 @@ function getLocationAndSendEmail(nome, data, hora) {
     }, error => {
       console.error('Erro ao obter localização:', error);
       alert('Ative a localização para acessar a carteirinha.');
-      
     });
   } else {
     alert('Geolocalização não é suportada pelo seu navegador.');

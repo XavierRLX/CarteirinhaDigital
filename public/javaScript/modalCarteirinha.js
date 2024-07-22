@@ -1,18 +1,22 @@
-// document.getElementById('acessarCarteirinha').addEventListener('click', function () {
-//     document.getElementById('modal').style.display = 'flex';
-//     document.getElementById('menu').style.display = 'none';
-// });
-
-// document.getElementById('acessarCarteirinha').addEventListener('click', () => {
-//     const nome = userInfo.nomePerfil;
-//     const data = new Date().toLocaleDateString('pt-BR');
-//     const hora = new Date().toLocaleTimeString('pt-BR'); 
-//     getLocationAndSendEmail(nome, data, hora);
-// });
-
-document.getElementById('acessarCarteirinha').addEventListener('click', () => {
-    getLocationAndSendEmail();
+document.getElementById('acessarCarteirinha').addEventListener('click', function () {
+    const nome = userInfo.nomePerfil;
+    const data = new Date().toLocaleDateString('pt-BR');
+    const hora = new Date().toLocaleTimeString('pt-BR');
+  
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('menu').style.display = 'none';
+        getLocationAndSendEmail(nome, data, hora);
+      }, error => {
+        console.error('Erro ao obter localização:', error);
+        alert('Ative a localização para acessar a carteirinha.');
+      });
+    } else {
+      alert('Geolocalização não é suportada pelo seu navegador.');
+    }
   });
+  
 
 document.getElementById('closeModalBtn').addEventListener('click', function () {
     document.getElementById('modal').style.display = 'none';
