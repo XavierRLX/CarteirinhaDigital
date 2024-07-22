@@ -9,12 +9,17 @@ function sendEmailUse(nome, data, hora) {
       },
       body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}`
     })
-      .then(response => response.text())
-      .then(message => {
-        console.log('Email enviado:', message);
-      })
-      .catch(error => {
-        console.error('Erro no envio do email:', error);
-      });
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erro no envio do email');
+      }
+      return response.text();
+    })
+    .then(message => {
+      console.log('Email enviado:', message);
+    })
+    .catch(error => {
+      console.error('Erro no envio do email:', error);
+    });
   }
   

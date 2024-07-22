@@ -5,11 +5,6 @@ const emailRoutes = require('./Routes/emailRoutes');
 const app = express();
 const port = 3000;
 
-app.use('/email', emailRoutes);
-app.post('/email/sendEmailUse', emailRoutes);
-
-
-
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -31,6 +26,9 @@ routes.forEach(route => {
     res.sendFile(indexPath);
   });
 });
+
+// Rotas de email
+app.use('/email', emailRoutes);
 
 // Inicializando o servidor
 app.listen(port, () => {

@@ -1,10 +1,11 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
+const path = require('path');
 const bodyParser = require('body-parser');
-const app = express();
+const router = express.Router();
 
-app.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.urlencoded({ extended: false }));
 
 // Configuração do transporte
 const transport = nodemailer.createTransport({
@@ -16,7 +17,7 @@ const transport = nodemailer.createTransport({
     pass: 'bnaeauszgluontqb',
   },
   tls: {
-    rejectUnauthorized: false,  
+    rejectUnauthorized: false,
   },
 });
 
@@ -36,20 +37,21 @@ const sendEmail = async (toEmail, subject, htmlContent) => {
   }
 };
 
-app.post('/useCarteirinha', async (req, res, next) => {
+router.post('/useCarteirinha', async (req, res, next) => {
   try {
     const { toEmail, nome, data, hora } = req.body;
+    console.log('Dados recebidos:', { toEmail, nome, data, hora });
 
-    const emailTemplatePath = path.join(__dirname, 'modelUse.html');
-    const EmailUse = fs.readFileSync(emailTemplatePath, 'utf-8');
+    const EmailUse = fs.readFileSync(__dirname + '/ModelsEmails/modelUse.html', 'utf-8');
     const personalizeEmail = EmailUse.replace('{{nome}}', nome).replace('{{data}}', data).replace('{{hora}}', hora);
 
     await sendEmail(toEmail, 'Carteirinha Digital - Acesso', personalizeEmail);
 
     res.send('Enviado');
   } catch (err) {
+    console.error('Erro ao enviar email:', err);
     next(err);
   }
 });
 
-module.exports = app;
+module.exports = router;
