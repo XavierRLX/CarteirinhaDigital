@@ -48,7 +48,7 @@ function getLocationAndSendEmail(nome, data, hora) {
         })
         .catch(error => {
           console.error('Erro ao obter dados da localização:', error);
-          alert('Erro ao obter dados da localização.');
+          //alert('Erro ao obter dados da localização.');
         });
 
     }, error => {
