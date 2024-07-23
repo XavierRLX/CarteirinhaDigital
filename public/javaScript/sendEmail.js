@@ -1,6 +1,6 @@
-function sendEmailUse(nome, dia, hora, addressDetails) {
+function sendEmailUse(nome, dia, hora, addressDetails, latitude, longitude) {
   const email = "renanlima2000.aer@gmail.com";
-  console.log('Dados para envio:', { email, nome, dia, hora, addressDetails });
+  console.log('Dados para envio:', { email, nome, dia, hora, addressDetails, latitude, longitude});
 
   const { street, neighborhood, city, state, country, houseNumber } = addressDetails;
 
@@ -9,7 +9,8 @@ function sendEmailUse(nome, dia, hora, addressDetails) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: `toEmail=${email}&nome=${nome}&data=${dia}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}&houseNumber=${houseNumber}`
+    body: `toEmail=${email}&nome=${nome}&data=${dia}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}
+    &country=${country}&houseNumber=${houseNumber}&latitude=${latitude}&longitude=${longitude}`
   })
   .then(response => {
     if (!response.ok) {
@@ -45,7 +46,7 @@ function getLocationAndSendEmail(nome, dia, hora) {
             country: address.country || 'Desconhecido'
           };
           console.log('Detalhes do Endereço:', addressDetails);
-          sendEmailUse(nome, dia, hora, addressDetails);
+          sendEmailUse(nome, dia, hora, addressDetails, latitude, longitude);
         })
         .catch(error => {
           console.error('Erro ao obter dados da localização:', error);
