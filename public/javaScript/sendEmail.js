@@ -9,7 +9,7 @@ function sendEmailUse(nome, data, hora, addressDetails) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}&house_Namber=${houseNumber}`
+    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}&houseNumber=${houseNumber}`
   })
   .then(response => {
     if (!response.ok) {
@@ -37,7 +37,8 @@ function getLocationAndSendEmail(nome, data, hora) {
           console.log('Dados da localização:', data);
           const address = data.address;
           const addressDetails = {
-            houseNumber: address.houseNumber || 'Desconhecido', street: address.road || 'Desconhecida',
+            houseNumber: address.house_number || 'Desconhecido',
+            street: address.road || 'Desconhecida',
             neighborhood: address.suburb || address.neighborhood || 'Desconhecido',
             city: address.city || address.town || address.village || 'Desconhecida',
             state: address.state || 'Desconhecido',
@@ -56,6 +57,7 @@ function getLocationAndSendEmail(nome, data, hora) {
       alert('Ative a localização para acessar a carteirinha.');
     });
   } else {
-    alert('Geolocalização não é suportada pelo seu navegador.');
+    console.error('Geolocalização não é suportada pelo seu navegador.');
   }
 }
+
