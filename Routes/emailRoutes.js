@@ -45,7 +45,7 @@ router.post('/useCarteirinha', async (req, res, next) => {
 
     let EmailUse = fs.readFileSync(__dirname + '/ModelsEmails/modelUse.html', 'utf-8');
     EmailUse = EmailUse.replace('{{nome}}', nome)
-                        .replace('{{data}}', dia)
+                        .replace('{{dia}}', dia)
                         .replace('{{hora}}', hora)
                         .replace('{{street}}', street)
                         .replace('{{neighborhood}}', neighborhood)

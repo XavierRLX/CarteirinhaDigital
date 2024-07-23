@@ -10,7 +10,7 @@ document.getElementById('acessarCarteirinha').addEventListener('click', function
         getLocationAndSendEmail(nome, dia, hora);
       }, error => {
         console.error('Erro ao obter localização:', error);
-        alert('Ative a localização!');
+        alert('Por favor, permita o acesso à localização nas configurações do seu navegador...');
       });
     } else {
       alert('Geolocalização não é suportada pelo seu navegador.');

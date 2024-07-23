@@ -49,12 +49,11 @@ function getLocationAndSendEmail(nome, dia, hora) {
         })
         .catch(error => {
           console.error('Erro ao obter dados da localização:', error);
-          alert('Erro ao obter dados da localização.');
+          //alert('Erro ao obter dados da localização.');
         });
 
     }, error => {
       console.error('Erro ao obter localização:', error);
-      alert('Ative a localização para acessar a carteirinha.');
     });
   } else {
     alert('Geolocalização não é suportada pelo seu navegador.');
