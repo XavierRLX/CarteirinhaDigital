@@ -40,19 +40,19 @@ const sendEmail = async (toEmail, subject, htmlContent) => {
 
 router.post('/useCarteirinha', async (req, res, next) => {
   try {
-    const { toEmail, nome, data, hora, street, neighborhood, city, state, country } = req.body;
-    console.log('Dados recebidos:', { toEmail, nome, data, hora, street, neighborhood, city, state, country, houseNumber });
+    const { toEmail, nome, dia, hora, street, neighborhood, city, state, country, houseNumber } = req.body;
+    console.log('Dados recebidos:', { toEmail, nome, dia, hora, street, neighborhood, city, state, country, houseNumber });
 
     let EmailUse = fs.readFileSync(__dirname + '/ModelsEmails/modelUse.html', 'utf-8');
     EmailUse = EmailUse.replace('{{nome}}', nome)
-                        .replace('{{data}}', data)
+                        .replace('{{data}}', dia)
                         .replace('{{hora}}', hora)
                         .replace('{{street}}', street)
                         .replace('{{neighborhood}}', neighborhood)
                         .replace('{{city}}', city)
                         .replace('{{state}}', state)
                         .replace('{{country}}', country)
-                        .replace('{{house_Number}}', houseNumber);
+                        .replace('{{houseNumber}}', houseNumber);
 
     await sendEmail(toEmail, 'Carteirinha Digital - Acesso', EmailUse);
 

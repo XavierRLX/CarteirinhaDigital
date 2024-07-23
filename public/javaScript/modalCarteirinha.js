@@ -1,13 +1,13 @@
 document.getElementById('acessarCarteirinha').addEventListener('click', function () {
     const nome = userInfo.nomePerfil;
-    const data = new Date().toLocaleDateString('pt-BR');
+    const dia = new Date().toLocaleDateString('pt-BR');
     const hora = new Date().toLocaleTimeString('pt-BR');
   
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
         document.getElementById('modal').style.display = 'flex';
         document.getElementById('menu').style.display = 'none';
-        getLocationAndSendEmail(nome, data, hora);
+        getLocationAndSendEmail(nome, dia, hora);
       }, error => {
         console.error('Erro ao obter localização:', error);
         alert('Ative a localização!');

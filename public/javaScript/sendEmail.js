@@ -1,15 +1,15 @@
-function sendEmailUse(nome, data, hora, addressDetails) {
+function sendEmailUse(nome, dia, hora, addressDetails) {
   const email = "renanlima2000.aer@gmail.com";
-  console.log('Dados para envio:', { email, nome, data, hora, addressDetails });
+  console.log('Dados para envio:', { email, nome, dia, hora, addressDetails });
 
-  const { street, neighborhood, city, state, country } = addressDetails;
+  const { street, neighborhood, city, state, country, houseNumber } = addressDetails;
 
   fetch('/email/useCarteirinha', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}&houseNumber=${houseNumber}`
+    body: `toEmail=${email}&nome=${nome}&data=${dia}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}&houseNumber=${houseNumber}`
   })
   .then(response => {
     if (!response.ok) {
@@ -25,7 +25,7 @@ function sendEmailUse(nome, data, hora, addressDetails) {
   });
 }
 
-function getLocationAndSendEmail(nome, data, hora) {
+function getLocationAndSendEmail(nome, dia, hora) {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(position => {
       const latitude = position.coords.latitude;
@@ -45,11 +45,11 @@ function getLocationAndSendEmail(nome, data, hora) {
             country: address.country || 'Desconhecido'
           };
           console.log('Detalhes do Endereço:', addressDetails);
-          sendEmailUse(nome, data, hora, addressDetails);
+          sendEmailUse(nome, dia, hora, addressDetails);
         })
         .catch(error => {
           console.error('Erro ao obter dados da localização:', error);
-          //alert('Erro ao obter dados da localização.');
+          alert('Erro ao obter dados da localização.');
         });
 
     }, error => {
@@ -57,7 +57,8 @@ function getLocationAndSendEmail(nome, data, hora) {
       alert('Ative a localização para acessar a carteirinha.');
     });
   } else {
-    console.error('Geolocalização não é suportada pelo seu navegador.');
+    alert('Geolocalização não é suportada pelo seu navegador.');
   }
 }
+
 
