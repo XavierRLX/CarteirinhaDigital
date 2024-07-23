@@ -9,7 +9,7 @@ function sendEmailUse(nome, data, hora, addressDetails) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}`
+    body: `toEmail=${email}&nome=${nome}&data=${data}&hora=${hora}&street=${street}&neighborhood=${neighborhood}&city=${city}&state=${state}&country=${country}&house_Namber=${houseNumber}`
   })
   .then(response => {
     if (!response.ok) {
@@ -37,7 +37,7 @@ function getLocationAndSendEmail(nome, data, hora) {
           console.log('Dados da localização:', data);
           const address = data.address;
           const addressDetails = {
-            street: address.road || 'Desconhecida',
+            houseNumber: address.houseNumber || 'Desconhecido', street: address.road || 'Desconhecida',
             neighborhood: address.suburb || address.neighborhood || 'Desconhecido',
             city: address.city || address.town || address.village || 'Desconhecida',
             state: address.state || 'Desconhecido',
