@@ -8,6 +8,13 @@
      document.getElementById('curso').innerHTML = `${userInfo.curso} `;
      document.getElementById('validade').innerHTML = formatValidade(userInfo.validade);
      document.getElementById('matricula').innerHTML = formatMatricula(userInfo.matricula);
+
+     const validadeDate = new Date (userInfo.validade);
+     const today = new Date();
+
+     if (validadeDate < today) {
+        document.getElementById('validade').style.color = 'red' ;
+     }
  } else {
      alert('Informações do usuário não encontradas');
      window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
@@ -23,6 +30,13 @@
      document.getElementById('validadeModal').innerHTML = formatValidade(userInfo.validade);
      document.getElementById('cursoModal').innerHTML = `${userInfoModal.curso}`
      document.getElementById('campusModal').innerHTML = `${userInfoModal.campus}`
+
+     const validadeDate = new Date (userInfo.validade);
+     const today = new Date();
+
+     if (validadeDate < today) {
+        document.getElementById('validadeModal').style.color = 'red' ;
+     }
  } ;
 
 //  document.getElementById('acessarCarteirinha').addEventListener('click', () => {
