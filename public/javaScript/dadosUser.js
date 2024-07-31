@@ -38,10 +38,3 @@
         document.getElementById('validadeModal').style.color = 'red' ;
      }
  } ;
-
-//  document.getElementById('acessarCarteirinha').addEventListener('click', () => {
-//     const nome = userInfo.nomePerfil;
-//     const data = new Date().toLocaleDateString('pt-BR');
-//     const hora = new Date().toLocaleTimeString('pt-BR'); 
-//     sendEmailUse(nome, data, hora);
-//   });

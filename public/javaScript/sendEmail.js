@@ -24,7 +24,7 @@ function sendEmailUse(nome, dia, hora, addressDetails, latitude, longitude) {
   .catch(error => {
     console.error('Erro no envio do email:', error);
   });
-}
+};
 
 function getLocationAndSendEmail(nome, dia, hora, latitude, longitude) {
   if (latitude !== 'Não informado' && longitude !== 'Não informado') {
@@ -67,6 +67,6 @@ function getLocationAndSendEmail(nome, dia, hora, latitude, longitude) {
     };
     sendEmailUse(nome, dia, hora, addressDetails, latitude, longitude);
   }
-}
+};
 
 
