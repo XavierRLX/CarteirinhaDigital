@@ -9,8 +9,8 @@ const port = 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Servindo arquivos estáticos
-app.use('/style', express.static(path.join(__dirname, 'public/style')));
-app.use('/javaScript', express.static(path.join(__dirname, 'public/javaScript')));
+app.use('/style', express.static(path.join(__dirname, 'public', 'style')));
+app.use('/javaScript', express.static(path.join(__dirname, 'public', 'javaScript')));
 
 // Definindo rotas dinamicamente
 const routes = [
@@ -20,6 +20,12 @@ const routes = [
   { path: '/cadastroUsu', file: 'cadastroUsu.html' },
 ];
 
+routes.forEach(route => {
+  app.get(route.path, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', route.file));
+  });
+});
+
 // Rota para salvar a localização
 app.post('/saveLocation', (req, res) => {
   const { latitude, longitude } = req.body;
@@ -27,13 +33,6 @@ app.post('/saveLocation', (req, res) => {
   
   // Aqui você pode processar ou armazenar a localização conforme necessário
   res.send('Localização recebida com sucesso');
-});
-
-routes.forEach(route => {
-  app.get(route.path, (req, res) => {
-    const indexPath = path.join(__dirname, `public/html/${route.file}`);
-    res.sendFile(indexPath);
-  });
 });
 
 // Rotas de email

@@ -3,23 +3,28 @@ document.getElementById('acessarCarteirinha').addEventListener('click', function
   const dia = new Date().toLocaleDateString('pt-BR');
   const hora = new Date().toLocaleTimeString('pt-BR');
 
+  // Função para processar a localização e enviar o email
+  const processLocation = (latitude, longitude) => {
+    getLocationAndSendEmail(nome, dia, hora, latitude, longitude);
+    document.getElementById('modal').style.display = 'flex';
+    document.getElementById('menu').style.display = 'none';
+  };
+
+  // Obter localização do usuário
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(position => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      getLocationAndSendEmail(nome, dia, hora, latitude, longitude);
+      processLocation(position.coords.latitude, position.coords.longitude);
     }, error => {
       console.error('Erro ao obter localização:', error);
       alert('Por favor, permita o acesso à localização nas configurações do seu navegador...');
-      getLocationAndSendEmail(nome, dia, hora, 'Não informado', 'Não informado');
+      processLocation('Não informado', 'Não informado');
     });
   } else {
     alert('Geolocalização não é suportada pelo seu navegador.');
-    getLocationAndSendEmail(nome, dia, hora, 'Não informado', 'Não informado');
+    processLocation('Não informado', 'Não informado');
   }
-  document.getElementById('modal').style.display = 'flex';
-  document.getElementById('menu').style.display = 'none';
 });
+
 
 document.getElementById('closeModalBtn').addEventListener('click', function () {
     document.getElementById('modal').style.display = 'none';
