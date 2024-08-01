@@ -94,7 +94,7 @@ header > section > div.iconsImg {
     border-radius: 25px 25px 0 0 ;
 }
 .cardTop img {
-    width: 9em;
+    width: 8.5em;
 }
 
 .cardBottom {
@@ -196,20 +196,26 @@ a {
     margin-bottom: -8px ;
 } 
 
-#btnIni, #btnSup, #btnCar, #btnFin, #btnPer{
+#btnIni, #btnSup, #btnFin, #btnPer{
     width: 24px;
     height: 24px;
 }
-
+#btnPer{
+    width: 22px;
+}
 #btnFin{
-    width: 19px;
+    width: 16px;
+}
+#btnIni {
+    width: 22px;
 }
 #btnCar {
+    width: 22px;
     height: 26px;
 }
 
 .btnFooter p {
-font-size: 14px;
+font-size: 13px;
 }
 
 .btnPerfA {
