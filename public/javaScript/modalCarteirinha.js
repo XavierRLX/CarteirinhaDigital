@@ -1,4 +1,4 @@
-document.getElementById('acessarCarteirinha').addEventListener('click', function () {
+document.getElementById('abrirCarteirinha').addEventListener('click', function () {
   const nome = userInfo.nomePerfil;
   const dia = new Date().toLocaleDateString('pt-BR');
   const hora = new Date().toLocaleTimeString('pt-BR');
