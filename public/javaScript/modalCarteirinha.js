@@ -8,18 +8,15 @@ document
       return;
     }
 
-    const nome = user.nomePerfil;
-    const dia = new Date().toLocaleDateString("pt-BR");
-    const hora = new Date().toLocaleTimeString("pt-BR");
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("menu").style.display = "none";
 
-    const sendEmail = () => {
-      getLocationAndSendEmail(nome, dia, hora, "Não aplicável", "Não aplicável");
-      document.getElementById("modal").style.display = "flex";
-      document.getElementById("menu").style.display = "none";
-    };
-
-   // sendEmail();
+    // const nome = user.nomePerfil;
+    // const dia = new Date().toLocaleDateString("pt-BR");
+    // const hora = new Date().toLocaleTimeString("pt-BR");
+    // getLocationAndSendEmail(nome, dia, hora, "Não aplicável", "Não aplicável");
   });
+
 
 
 document.getElementById("closeModalBtn").addEventListener("click", function () {

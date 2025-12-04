@@ -1,50 +1,71 @@
 // dadosUser.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const stored = localStorage.getItem('userInfo');
-    let userInfo = stored ? JSON.parse(stored) : null;
+  const stored = localStorage.getItem('userInfo');
+  if (!stored) {
+    alert('Você precisa fazer login novamente.');
+    window.location.href = '/login';
+    return;
+  }
 
-    if (!userInfo || !userInfo.id) {
-      alert('Você precisa fazer login novamente.');
+  let userInfo;
+  try {
+    userInfo = JSON.parse(stored);
+  } catch (e) {
+    console.error('Erro ao ler userInfo do localStorage:', e);
+    alert('Erro ao carregar dados do usuário. Faça login novamente.');
+    window.location.href = '/login';
+    return;
+  }
+
+  if (!userInfo.email) {
+    alert('Dados do usuário incompletos. Faça login novamente.');
+    window.location.href = '/login';
+    return;
+  }
+
+  // 1) sempre preenche a tela com o snapshot do login
+  preencherCarteirinha(userInfo);
+  preencherModal(userInfo);
+  window.currentUser = userInfo;
+
+  // 2) tenta buscar dados atualizados no backend (se tiver id)
+  if (!userInfo.id) {
+    console.warn('userInfo.id está vazio; usando apenas dados locais.');
+    return;
+  }
+
+  try {
+    const resp = await fetch(`/api/me/${encodeURIComponent(userInfo.id)}`);
+    const body = await resp.json().catch(() => ({}));
+
+    if (resp.ok && body.user) {
+      // atualiza com dados frescos do banco
+      userInfo = body.user;
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      window.currentUser = userInfo;
+
+      preencherCarteirinha(userInfo);
+      preencherModal(userInfo);
+      return;
+    }
+
+    // se o backend disser que não está mais ativo, aí sim derruba o acesso
+    if (resp.status === 403) {
+      alert(body.error || 'Seu cadastro não está ativo.');
       window.location.href = '/login';
       return;
     }
 
-    // tenta buscar dados atualizados no backend
-    try {
-      const resp = await fetch(`/api/me/${userInfo.id}`);
-      const body = await resp.json().catch(() => ({}));
-
-      if (resp.ok) {
-        userInfo = body.user;
-        // atualiza snapshot salvo
-        localStorage.setItem('userInfo', JSON.stringify(userInfo));
-      } else if (resp.status === 403) {
-        alert(body.error || 'Seu cadastro não está ativo.');
-        window.location.href = '/login';
-        return;
-      } else if (resp.status === 404) {
-        alert('Usuário não encontrado. Faça login novamente.');
-        window.location.href = '/login';
-        return;
-      } else {
-        console.warn('Não foi possível atualizar dados do usuário:', body.error);
-        // segue usando o snapshot salvo no localStorage
-      }
-    } catch (e) {
-      console.warn('Falha ao buscar /api/me, usando dados locais:', e);
+    if (resp.status === 404) {
+      console.warn('Usuário não encontrado no /api/me. Usando dados locais.');
+      // não derruba o usuário, só segue com o que veio do login
+      return;
     }
 
-    // deixa disponível para outros scripts (abrirCarteirinha, sendEmail etc)
-    window.currentUser = userInfo;
-
-    preencherCarteirinha(userInfo);
-    preencherModal(userInfo);
+    console.warn('Falha ao atualizar dados do /api/me:', body.error || resp.status);
   } catch (err) {
-    console.error('Erro ao inicializar carteirinha:', err);
-    alert('Erro ao carregar dados do usuário. Faça login novamente.');
-    window.location.href = '/login';
+    console.warn('Erro ao chamar /api/me, usando dados locais:', err);
   }
 });
 
