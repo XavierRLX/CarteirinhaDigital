@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style/styleCU.css" />
+  <title>Cadastro de Usuário</title>
+</head>
+<body>
+  <h1>Cadastro de Usuário</h1>
+
+  <form id="registerForm">
+    <label for="nome">Nome Completo:</label>
+    <input type="text" id="nome" name="nome" required />
+    <br />
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required />
+    <br />
+
+    <label for="nomePerfil">Nome Perfil:</label>
+    <input type="text" id="nomePerfil" name="nomePerfil" required />
+    <br />
+
+    <label for="password">Senha:</label>
+    <input type="password" id="password" name="password" required />
+    <br />
+
+    <label for="curso">Curso:</label>
+    <input type="text" id="curso" name="curso" required />
+    <br />
+
+    <label for="matricula">Matrícula:</label>
+    <input type="text" id="matricula" name="matricula" required />
+    <br />
+
+    <label for="cpf">CPF:</label>
+    <input type="text" id="cpf" name="cpf" required />
+    <br />
+
+    <label for="dataNascimento">Data de nascimento:</label>
+    <input type="date" id="dataNascimento" name="dataNascimento" required />
+    <br />
+
+    <label for="numeroTel">Número de Telefone:</label>
+    <input type="tel" id="numeroTel" name="numeroTel" required />
+    <br />
+
+    <label for="campus">Campus:</label>
+    <input type="text" id="campus" name="campus" required />
+    <br />
+
+    <label for="validade">Validade:</label>
+    <input type="date" id="validade" name="validade" required />
+    <br />
+
+    <label for="fotoUrl">URL da Foto:</label>
+    <input type="text" id="fotoUrl" name="fotoUrl" required />
+    <br />
+
+    <button type="submit">Cadastrar</button>
+  </form>
+
+  <a href="/login" title="Ir para Login">Já tenho conta</a>
+
+  <script>
+    const form = document.getElementById('registerForm');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        nome: form.nome.value.trim(),
+        email: form.email.value.trim(),
+        nomePerfil: form.nomePerfil.value.trim(),
+        password: form.password.value,
+        curso: form.curso.value.trim(),
+        matricula: form.matricula.value.trim(),
+        cpf: form.cpf.value.trim(),
+        dataNascimento: form.dataNascimento.value,
+        numeroTel: form.numeroTel.value.trim(),
+        campus: form.campus.value.trim(),
+        validade: form.validade.value,
+        fotoUrl: form.fotoUrl.value.trim(),
+      };
+
+      if (!payload.nome || !payload.email || !payload.nomePerfil || !payload.password) {
+        alert('Preencha Nome, Email, Nome de Perfil e Senha.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/public/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.error || 'Erro ao criar cadastro');
+          return;
+        }
+
+        alert('Cadastro realizado! Seu usuário está INATIVO. Aguarde o administrador aprovar.');
+        form.reset();
+
+        // opcional: já mandar para login
+        window.location.href = '/login';
+      } catch (error) {
+        console.error('Erro no cadastro público:', error);
+        alert('Erro ao criar cadastro. Tente novamente.');
+      }
+    });
+  </script>
+</body>
+</html>

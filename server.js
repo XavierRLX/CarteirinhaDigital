@@ -59,6 +59,7 @@ const routes = [
   { path: '/login', file: 'login.html' },
   { path: '/carteirinhaDigital', file: 'carteirinhaDigital.html' },
   { path: '/cadastroUsu', file: 'cadastroUsu.html' },
+  { path: '/cadastroPublico', file: 'cadastroPublico.html' },
 ];
 
 routes.forEach((route) => {
@@ -81,7 +82,10 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+      return res.status(400).json({
+        error: 'Email e senha são obrigatórios',
+        code: 'MISSING_CREDENTIALS',
+      });
     }
 
     const { data: users, error } = await supabaseAdmin
@@ -92,25 +96,53 @@ app.post('/api/login', async (req, res) => {
 
     if (error) {
       console.error('Erro Supabase (login):', error);
-      return res.status(500).json({ error: 'Erro ao buscar usuário' });
+      return res.status(500).json({
+        error: 'Erro ao buscar usuário',
+        code: 'DB_ERROR',
+      });
     }
 
     const user = users && users[0];
 
+    // usuário não encontrado
     if (!user) {
-      return res.status(401).json({ error: 'Email ou senha inválidos' });
+      return res.status(401).json({
+        error: 'Email ou senha inválidos',
+        code: 'INVALID_CREDENTIALS',
+      });
     }
 
     const passwordOk = await bcrypt.compare(password, user.password_hash);
+
+    // senha errada
     if (!passwordOk) {
-      return res.status(401).json({ error: 'Email ou senha inválidos' });
+      return res.status(401).json({
+        error: 'Email ou senha inválidos',
+        code: 'INVALID_CREDENTIALS',
+      });
     }
 
+    // status diferente de active
     if (user.status !== 'active') {
-      return res.status(403).json({ error: 'Usuário não está ativo' });
+      let msg = 'Usuário não está ativo.';
+      let code = 'INACTIVE';
+
+      if (user.status === 'pending') {
+        msg = 'Seu cadastro está pendente de aprovação pelo administrador.';
+        code = 'PENDING';
+      } else if (user.status === 'inactive') {
+        msg = 'Seu cadastro ainda não foi ativado. Aguarde o administrador aprovar.';
+        code = 'INACTIVE';
+      }
+
+      return res.status(403).json({
+        error: msg,
+        code,
+        status: user.status,
+      });
     }
 
-    // Monta objeto "limpo" para o front
+    // tudo ok, monta objeto "seguro" pro front
     const safeUser = {
       id: user.id,
       email: user.email,
@@ -129,9 +161,13 @@ app.post('/api/login', async (req, res) => {
     return res.json({ user: safeUser });
   } catch (err) {
     console.error('Erro /api/login:', err);
-    return res.status(500).json({ error: 'Erro interno no servidor' });
+    return res.status(500).json({
+      error: 'Erro interno no servidor',
+      code: 'INTERNAL_ERROR',
+    });
   }
 });
+
 
 /**
  * POST /api/admin/users
@@ -217,6 +253,197 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
+// Atualizar dados completos de um usuário (admin)
+app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      email,
+      password,
+      nome,
+      nomePerfil,
+      curso,
+      campus,
+      matricula,
+      cpf,
+      numeroTel,
+      dataNascimento,
+      validade,
+      fotoUrl,
+      status,
+    } = req.body;
+
+    const updatePayload = {};
+
+    if (email !== undefined) updatePayload.email = email;
+    if (nome !== undefined) updatePayload.nome = nome;
+    if (nomePerfil !== undefined) updatePayload.nome_perfil = nomePerfil;
+    if (curso !== undefined) updatePayload.curso = curso;
+    if (campus !== undefined) updatePayload.campus = campus;
+    if (matricula !== undefined) updatePayload.matricula = matricula;
+    if (cpf !== undefined) updatePayload.cpf = cpf;
+    if (numeroTel !== undefined) updatePayload.numero_tel = numeroTel;
+    if (dataNascimento !== undefined) updatePayload.data_nascimento = dataNascimento;
+    if (validade !== undefined) updatePayload.validade = validade;
+    if (fotoUrl !== undefined) updatePayload.foto_url = fotoUrl;
+    if (status !== undefined) updatePayload.status = status;
+
+    // Se veio uma nova senha, atualiza o hash
+    if (password) {
+      updatePayload.password_hash = await bcrypt.hash(password, 10);
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .update(updatePayload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro Supabase (update user):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    console.error('Erro /api/admin/users/:id (PUT):', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Atualizar apenas o status (active/inactive/pending)
+app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowed = ['active', 'inactive', 'pending'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: 'Status inválido' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro Supabase (update status):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    console.error('Erro /api/admin/users/:id/status (PATCH):', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Excluir usuário
+app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabaseAdmin
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro Supabase (delete user):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(204).send();
+  } catch (err) {
+    console.error('Erro /api/admin/users/:id (DELETE):', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Cadastro público de usuário - status começa como 'inactive'
+app.post('/api/public/register', async (req, res) => {
+  try {
+    const {
+      email,
+      password,
+      nome,
+      nomePerfil,
+      curso,
+      campus,
+      matricula,
+      cpf,
+      numeroTel,
+      dataNascimento,
+      validade,
+      fotoUrl,
+    } = req.body;
+
+    // validações básicas
+    if (!email || !password || !nome || !nomePerfil) {
+      return res.status(400).json({
+        error: 'Nome, Nome de Perfil, Email e Senha são obrigatórios',
+      });
+    }
+
+    // evitar email duplicado
+    const { data: existing, error: existingError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .limit(1);
+
+    if (existingError) {
+      console.error('Erro Supabase (check existing email):', existingError);
+      return res.status(500).json({ error: 'Erro ao validar email' });
+    }
+
+    if (existing && existing.length > 0) {
+      return res.status(400).json({ error: 'Email já cadastrado' });
+    }
+
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        email,
+        password_hash,
+        nome,
+        nome_perfil: nomePerfil,
+        curso,
+        campus,
+        matricula,
+        cpf,
+        numero_tel: numeroTel,
+        data_nascimento: dataNascimento,
+        validade,
+        foto_url: fotoUrl,
+        status: 'inactive', // 🔴 sempre começa inativo
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro Supabase (public register):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(201).json({
+      message: 'Cadastro realizado. Aguarde ativação pelo administrador.',
+      userId: data.id,
+    });
+  } catch (err) {
+    console.error('Erro /api/public/register:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
 
 /* ------------------------------------------------------------------
    6. Rota para salvar localização (mantida do seu código antigo)

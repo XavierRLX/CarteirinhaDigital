@@ -1,61 +1,326 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/style/styleCU.css">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style/styleCU.css" />
+  <title>Cadastrar Usuário</title>
 </head>
 <body>
-    <h1>Cadastrar Usuário</h1>
-    <form id="registerForm">
-        <label for="nome">Nome Completo:</label>
-        <input type="text" id="nome" name="nome" required>
-        <br>
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
-        <br>
-        <label for="nomePerfil">Nome Perfil:</label>
-        <input type="text" id="nomePerfil" name="nomePerfil" required>
-        <br>
-        <label for="password">Senha:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <label for="curso">Curso:</label>
-        <input type="text" id="curso" name="curso" required>
-        <br>
-        <label for="matricula">Matrícula</label>
-        <input type="text" id="matricula" name="matricula" required>
-        <br>
-        <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" name="cpf" required>
-        <br>
-        <label for="dataNascimento">Data de nascimento:</label>
-        <input type="date" id="dataNascimento" name="dataNascimento" required>
-        <br>
-        <label for="numeroTel">Número de Telefone:</label>
-        <input type="tel" id="numeroTel" name="numeroTel" required>
-        <br>
-        <label for="campus">Campus:</label>
-        <input type="text" id="campus" name="campus" required>
-        <br>
-        <label for="validade">Validade:</label>
-        <input type="date" id="validade" name="validade" required>
-        <br>
-        <label for="fotoUrl">URL da Foto:</label>
-        <input type="text" id="fotoUrl" name="fotoUrl" required>
-        <br>
-        <button type="submit">Registrar</button>
-    </form>
+  <h1>Cadastrar Usuário (Admin)</h1>
 
-    <a href="/login" title="Ir para Login">Login</a>
+  <form id="registerForm">
+    <!-- usado para saber se é edição -->
+    <input type="hidden" id="userId" name="userId" />
 
-    <h2>Lista de Usuários</h2>
-    <div id="userList"></div>
+    <label for="nome">Nome Completo:</label>
+    <input type="text" id="nome" name="nome" required />
+    <br />
 
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" required />
+    <br />
 
-    <script src="/javaScript/cadastroUsu.js"></script>
-   
+    <label for="nomePerfil">Nome Perfil:</label>
+    <input type="text" id="nomePerfil" name="nomePerfil" required />
+    <br />
+
+    <label for="password">Senha:</label>
+    <input type="password" id="password" name="password" />
+    <br />
+
+    <label for="curso">Curso:</label>
+    <input type="text" id="curso" name="curso" required />
+    <br />
+
+    <label for="matricula">Matrícula:</label>
+    <input type="text" id="matricula" name="matricula" required />
+    <br />
+
+    <label for="cpf">CPF:</label>
+    <input type="text" id="cpf" name="cpf" required />
+    <br />
+
+    <label for="dataNascimento">Data de nascimento:</label>
+    <input type="date" id="dataNascimento" name="dataNascimento" required />
+    <br />
+
+    <label for="numeroTel">Número de Telefone:</label>
+    <input type="tel" id="numeroTel" name="numeroTel" required />
+    <br />
+
+    <label for="campus">Campus:</label>
+    <input type="text" id="campus" name="campus" required />
+    <br />
+
+    <label for="validade">Validade:</label>
+    <input type="date" id="validade" name="validade" required />
+    <br />
+
+    <label for="fotoUrl">URL da Foto:</label>
+    <input type="text" id="fotoUrl" name="fotoUrl" required />
+    <br />
+
+    <button type="submit" id="submitBtn">Registrar</button>
+    <button type="button" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
+  </form>
+
+  <a href="/login" title="Ir para Login">Login</a>
+
+  <h2>Lista de Usuários</h2>
+  <div id="userList"></div>
+
+  <script>
+    // precisa ser o mesmo valor que está no ADMIN_PANEL_PASSWORD do .env
+    const ADMIN_PASSWORD = 'cadastrarAdmin1234';
+
+    let usersCache = [];
+    let editingUserId = null;
+
+    function solicitarSenhaAdmin() {
+      const inputPassword = prompt('Por favor, insira a senha de administrador:');
+      if (inputPassword !== ADMIN_PASSWORD) {
+        alert('Senha de administrador incorreta!');
+        window.location.href = '/login';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadUsers() {
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '<p>Carregando usuários...</p>';
+
+      try {
+        const response = await fetch('/api/admin/users', {
+          method: 'GET',
+          headers: {
+            'x-admin-password': ADMIN_PASSWORD,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          userList.innerHTML =
+            '<p>Erro ao carregar usuários: ' + (data.error || 'Erro desconhecido') + '</p>';
+          return;
+        }
+
+        usersCache = Array.isArray(data) ? data : [];
+
+        if (usersCache.length === 0) {
+          userList.innerHTML = '<p>Nenhum usuário cadastrado.</p>';
+          return;
+        }
+
+        userList.innerHTML = '';
+
+        usersCache.forEach((user) => {
+          const div = document.createElement('div');
+          div.className = 'user-item';
+          div.innerHTML = `
+            <p><strong>Nome:</strong> ${user.nome}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Status:</strong> ${user.status}</p>
+            <p><strong>Telefone:</strong> ${user.numero_tel || ''}</p>
+            <p><strong>Validade:</strong> ${user.validade || ''}</p>
+            ${
+              user.foto_url
+                ? `<img src="${user.foto_url}" alt="Foto do Usuário" style="max-width: 80px; border-radius: 4px;" />`
+                : ''
+            }
+            <br />
+            <button type="button" onclick="editUser('${user.id}')">Editar</button>
+            <button type="button" onclick="changeStatus('${user.id}', 'active')">Ativar</button>
+            <button type="button" onclick="changeStatus('${user.id}', 'inactive')">Inativar</button>
+            <button type="button" onclick="deleteUser('${user.id}')">Excluir</button>
+            <hr />
+          `;
+          userList.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        userList.innerHTML = '<p>Erro ao carregar usuários.</p>';
+      }
+    }
+
+    function preencherFormComUsuario(user) {
+      const form = document.getElementById('registerForm');
+
+      form.userId.value = user.id;
+      form.nome.value = user.nome || '';
+      form.email.value = user.email || '';
+      form.nomePerfil.value = user.nome_perfil || '';
+      form.curso.value = user.curso || '';
+      form.campus.value = user.campus || '';
+      form.matricula.value = user.matricula || '';
+      form.cpf.value = user.cpf || '';
+      form.numeroTel.value = user.numero_tel || '';
+      form.dataNascimento.value = user.data_nascimento || '';
+      form.validade.value = user.validade || '';
+      form.fotoUrl.value = user.foto_url || '';
+
+      // senha fica em branco (só preenche se quiser trocar)
+      form.password.value = '';
+    }
+
+    function resetForm() {
+      const form = document.getElementById('registerForm');
+      form.reset();
+      form.userId.value = '';
+      editingUserId = null;
+
+      document.getElementById('submitBtn').textContent = 'Registrar';
+      document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    async function handleRegisterSubmit(event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const isEditing = !!editingUserId;
+
+      const payload = {
+        email: form.email.value.trim(),
+        password: form.password.value, // pode estar vazio em edição
+        nome: form.nome.value.trim(),
+        nomePerfil: form.nomePerfil.value.trim(),
+        curso: form.curso.value.trim(),
+        campus: form.campus.value.trim(),
+        matricula: form.matricula.value.trim(),
+        cpf: form.cpf.value.trim(),
+        numeroTel: form.numeroTel.value.trim(),
+        dataNascimento: form.dataNascimento.value,
+        validade: form.validade.value,
+        fotoUrl: form.fotoUrl.value.trim(),
+      };
+
+      if (!payload.email || !payload.nome || !payload.nomePerfil) {
+        alert('Preencha pelo menos Nome, Nome de Perfil e Email.');
+        return;
+      }
+
+      if (!isEditing && !payload.password) {
+        alert('Senha é obrigatória para novo usuário.');
+        return;
+      }
+
+      // Se está editando e não digitou nova senha, não manda o campo password
+      if (isEditing && !payload.password) {
+        delete payload.password;
+      }
+
+      try {
+        const url = isEditing
+          ? `/api/admin/users/${editingUserId}`
+          : '/api/admin/users';
+
+        const method = isEditing ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-password': ADMIN_PASSWORD,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.error || 'Erro ao salvar usuário');
+          return;
+        }
+
+        alert(isEditing ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
+
+        resetForm();
+        loadUsers();
+      } catch (error) {
+        console.error('Erro ao salvar usuário:', error);
+        alert('Erro ao salvar usuário. Tente novamente.');
+      }
+    }
+
+    // Funções globais para os botões da lista
+    window.editUser = function (id) {
+      const user = usersCache.find((u) => u.id === id);
+      if (!user) {
+        alert('Usuário não encontrado');
+        return;
+      }
+
+      editingUserId = id;
+      preencherFormComUsuario(user);
+
+      document.getElementById('submitBtn').textContent = 'Salvar alterações';
+      document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    };
+
+    window.changeStatus = async function (id, newStatus) {
+      if (!confirm(`Deseja realmente alterar o status para "${newStatus}"?`)) return;
+
+      try {
+        const response = await fetch(`/api/admin/users/${id}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-password': ADMIN_PASSWORD,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.error || 'Erro ao alterar status');
+          return;
+        }
+
+        loadUsers();
+      } catch (error) {
+        console.error('Erro ao alterar status:', error);
+        alert('Erro ao alterar status.');
+      }
+    };
+
+    window.deleteUser = async function (id) {
+      if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+
+      try {
+        const response = await fetch(`/api/admin/users/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'x-admin-password': ADMIN_PASSWORD,
+          },
+        });
+
+        if (!response.ok && response.status !== 204) {
+          const data = await response.json().catch(() => ({}));
+          alert(data.error || 'Erro ao excluir usuário');
+          return;
+        }
+
+        loadUsers();
+      } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+        alert('Erro ao excluir usuário.');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!solicitarSenhaAdmin()) return;
+
+      loadUsers();
+
+      const registerForm = document.getElementById('registerForm');
+      registerForm.addEventListener('submit', handleRegisterSubmit);
+
+      document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+    });
+  </script>
 </body>
 </html>

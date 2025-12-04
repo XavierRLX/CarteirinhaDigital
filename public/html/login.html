@@ -1,57 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
 </head>
 <body>
-    <h1>Login</h1>
-    <form id="loginForm">
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
-        <br>
-        <label for="password">Senha:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">Entrar</button>
+  <h1>Login</h1>
 
-        <a href="/cadastroUsu" title="Ir para cadastro de usuário"><p>Cadastrar Usuário</p></a>
+  <form id="loginForm">
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" required />
+    <br />
 
-    </form>
+    <label for="password">Senha:</label>
+    <input type="password" id="password" name="password" required />
+    <br />
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const email = event.target.email.value;
-            const password = event.target.password.value;
+    <button type="submit">Entrar</button>
 
-            const supabaseUrl = 'https://mjjumtkxcqbdbynzmqqh.supabase.co';
-            const url = `${supabaseUrl}/rest/v1/users?select=*`;
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qanVtdGt4Y3FiZGJ5bnptcXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg3MTA3NTIsImV4cCI6MjAzNDI4Njc1Mn0.1Bfat4NXHJjTFZf-RV6fFUNr56kVqjwetH4ROWBDEuE',
-                },
-            });
+    <a href="/cadastroPublico" title="Ir para cadastro de usuário">
+     <p>Cadastrar Usuário</p>
+    </a>
 
-            if (response.ok) {
-                const data = await response.json();
-                const user = data.find(u => u.email === email && u.password === password);
-                if (user) {
-                    // Armazena as informações do usuário no localStorage
-                    localStorage.setItem('userInfo', JSON.stringify(user));
-                    // Redireciona para a página infoUsuario
-                    window.location.href = 'carteirinhaDigital';
-                } else {
-                    alert('Email ou senha incorretos');
-                }
-            } else {
-                alert('Erro ao fazer login');
-            }
-        });
-    </script>
+  </form>
+
+  <script>
+  const loginForm = document.getElementById('loginForm');
+
+  loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const email = event.target.email.value.trim();
+    const password = event.target.password.value;
+
+    if (!email || !password) {
+      alert('Preencha email e senha.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const body = await response.json().catch(() => ({}));
+
+      // Se der erro, tratamos por status + code
+      if (!response.ok) {
+        // Credenciais erradas
+        if (response.status === 401 && body.code === 'INVALID_CREDENTIALS') {
+          alert('Email ou senha incorretos.');
+          return;
+        }
+
+        // Status bloqueando o login
+        if (response.status === 403) {
+          if (body.code === 'PENDING') {
+            alert('Seu cadastro está pendente de aprovação pelo administrador.');
+            return;
+          }
+          if (body.code === 'INACTIVE') {
+            alert('Seu cadastro ainda não foi ativado. Aguarde o administrador aprovar.');
+            return;
+          }
+
+          alert(body.error || 'Seu acesso está bloqueado.');
+          return;
+        }
+
+        // Outros erros (400, 500, etc.)
+        alert(body.error || 'Erro ao fazer login. Tente novamente.');
+        return;
+      }
+
+      // Sucesso: salva dados do usuário e redireciona
+      localStorage.setItem('userInfo', JSON.stringify(body.user));
+      window.location.href = 'carteirinhaDigital';
+    } catch (error) {
+      console.error('Erro no login:', error);
+      alert('Erro ao fazer login. Tente novamente.');
+    }
+  });
+</script>
+
 </body>
 </html>
