@@ -9,10 +9,12 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.86.0",
     "axios": "^1.7.2",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.6.1",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "nodemailer": "^6.9.14"
   },
   "author": "Xavier",

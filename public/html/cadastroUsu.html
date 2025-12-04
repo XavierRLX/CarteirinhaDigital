@@ -10,7 +10,7 @@
 <body>
   <h1>Cadastrar Usuário (Admin)</h1>
 
-  <form id="registerForm">
+  <form id="registerForm" enctype="multipart/form-data">
     <!-- usado para saber se é edição -->
     <input type="hidden" id="userId" name="userId" />
 
@@ -58,9 +58,10 @@
     <input type="date" id="validade" name="validade" required />
     <br />
 
-    <label for="fotoUrl">URL da Foto:</label>
-    <input type="text" id="fotoUrl" name="fotoUrl" required />
+    <label for="foto">Foto:</label>
+    <input type="file" id="foto" name="foto" accept="image/*" />
     <br />
+
 
     <button type="submit" id="submitBtn">Registrar</button>
     <button type="button" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
@@ -73,7 +74,7 @@
 
   <script>
     // precisa ser o mesmo valor que está no ADMIN_PANEL_PASSWORD do .env
-    const ADMIN_PASSWORD = 'cadastrarAdmin1234';
+    const ADMIN_PASSWORD = 'RumoaoDima24@';
 
     let usersCache = [];
     let editingUserId = null;
@@ -166,84 +167,93 @@
       form.password.value = '';
     }
 
-    function resetForm() {
-      const form = document.getElementById('registerForm');
-      form.reset();
-      form.userId.value = '';
-      editingUserId = null;
+   function resetForm() {
+  const form = document.getElementById('registerForm');
+  form.reset();
+  form.userId.value = '';
+  if (form.foto) form.foto.value = ''; 
+  editingUserId = null;
 
-      document.getElementById('submitBtn').textContent = 'Registrar';
-      document.getElementById('cancelEditBtn').style.display = 'none';
-    }
+  document.getElementById('submitBtn').textContent = 'Registrar';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+
 
     async function handleRegisterSubmit(event) {
-      event.preventDefault();
+  event.preventDefault();
 
-      const form = event.target;
-      const isEditing = !!editingUserId;
+  const form = event.target;
+  const isEditing = !!editingUserId;
 
-      const payload = {
-        email: form.email.value.trim(),
-        password: form.password.value, // pode estar vazio em edição
-        nome: form.nome.value.trim(),
-        nomePerfil: form.nomePerfil.value.trim(),
-        curso: form.curso.value.trim(),
-        campus: form.campus.value.trim(),
-        matricula: form.matricula.value.trim(),
-        cpf: form.cpf.value.trim(),
-        numeroTel: form.numeroTel.value.trim(),
-        dataNascimento: form.dataNascimento.value,
-        validade: form.validade.value,
-        fotoUrl: form.fotoUrl.value.trim(),
-      };
+  const fotoInput = form.foto;
 
-      if (!payload.email || !payload.nome || !payload.nomePerfil) {
-        alert('Preencha pelo menos Nome, Nome de Perfil e Email.');
-        return;
-      }
+  if (!isEditing && (!fotoInput.files || !fotoInput.files[0])) {
+    alert('Selecione uma foto para o usuário.');
+    return;
+  }
 
-      if (!isEditing && !payload.password) {
-        alert('Senha é obrigatória para novo usuário.');
-        return;
-      }
+  const formData = new FormData();
 
-      // Se está editando e não digitou nova senha, não manda o campo password
-      if (isEditing && !payload.password) {
-        delete payload.password;
-      }
+  formData.append('email', form.email.value.trim());
+  formData.append('nome', form.nome.value.trim());
+  formData.append('nomePerfil', form.nomePerfil.value.trim());
+  formData.append('curso', form.curso.value.trim());
+  formData.append('campus', form.campus.value.trim());
+  formData.append('matricula', form.matricula.value.trim());
+  formData.append('cpf', form.cpf.value.trim());
+  formData.append('numeroTel', form.numeroTel.value.trim());
+  formData.append('dataNascimento', form.dataNascimento.value);
+  formData.append('validade', form.validade.value);
 
-      try {
-        const url = isEditing
-          ? `/api/admin/users/${editingUserId}`
-          : '/api/admin/users';
-
-        const method = isEditing ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-password': ADMIN_PASSWORD,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          alert(data.error || 'Erro ao salvar usuário');
-          return;
-        }
-
-        alert(isEditing ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
-
-        resetForm();
-        loadUsers();
-      } catch (error) {
-        console.error('Erro ao salvar usuário:', error);
-        alert('Erro ao salvar usuário. Tente novamente.');
-      }
+  // senha:
+  if (!isEditing) {
+    if (!form.password.value) {
+      alert('Senha é obrigatória para novo usuário.');
+      return;
     }
+    formData.append('password', form.password.value);
+  } else if (form.password.value) {
+    // edição: só manda se foi preenchida (troca de senha)
+    formData.append('password', form.password.value);
+  }
+
+  // foto (obrigatória no create, opcional no update)
+  if (fotoInput.files && fotoInput.files[0]) {
+    formData.append('foto', fotoInput.files[0]);
+  }
+
+  try {
+    const url = isEditing
+      ? `/api/admin/users/${editingUserId}`
+      : '/api/admin/users';
+
+    const method = isEditing ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'x-admin-password': ADMIN_PASSWORD,
+        // ❌ NÃO coloca Content-Type aqui, o browser define o boundary
+      },
+      body: formData,
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      alert(data.error || 'Erro ao salvar usuário');
+      return;
+    }
+
+    alert(isEditing ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
+    resetForm();
+    loadUsers();
+  } catch (error) {
+    console.error('Erro ao salvar usuário:', error);
+    alert('Erro ao salvar usuário. Tente novamente.');
+  }
+}
+
 
     // Funções globais para os botões da lista
     window.editUser = function (id) {

@@ -4,16 +4,27 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const emailRoutes = require('./Routes/emailRoutes');
+const multer = require('multer');
+const { randomUUID } = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 /* ------------------------------------------------------------------
-   1. Middlewares básicos
+   1. Upload em memória (para fotos de usuário)
 ------------------------------------------------------------------- */
-// Para receber JSON e forms (login/cadastro)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});
+
+/* ------------------------------------------------------------------
+   2. Middlewares básicos
+------------------------------------------------------------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -22,7 +33,7 @@ app.use('/style', express.static(path.join(__dirname, 'public', 'style')));
 app.use('/javaScript', express.static(path.join(__dirname, 'public', 'javaScript')));
 
 /* ------------------------------------------------------------------
-   2. Supabase clients
+   3. Supabase clients
 ------------------------------------------------------------------- */
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -32,15 +43,17 @@ if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
   console.warn('⚠️  Variáveis do Supabase não configuradas no .env');
 }
 
-// Cliente "público" (se você quiser usar depois no backend sem privilégios de admin)
+// Cliente "público" (reservado, se quiser usar depois)
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Cliente admin – usa service_role, só aqui no backend
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 /* ------------------------------------------------------------------
-   3. Proteção simples para rotas de admin
+   4. Helpers
 ------------------------------------------------------------------- */
+
+// Senha simples para proteger as rotas de admin
 const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || 'admin1234';
 
 function requireAdmin(req, res, next) {
@@ -51,15 +64,65 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// Mapeia o registro do banco para o objeto seguro enviado ao front
+function mapUserToSafeUser(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    nome: user.nome,
+    nomePerfil: user.nome_perfil,
+    curso: user.curso,
+    campus: user.campus,
+    matricula: user.matricula,
+    cpf: user.cpf,
+    numeroTel: user.numero_tel,
+    dataNascimento: user.data_nascimento,
+    validade: user.validade,
+    fotoUrl: user.foto_url,
+  };
+}
+
+// Upload da imagem para o bucket "avatars" e retorna a URL pública
+async function uploadUserImage(file) {
+  if (!file) {
+    throw new Error('Foto é obrigatória');
+  }
+
+  if (!file.mimetype.startsWith('image/')) {
+    throw new Error('Arquivo de foto inválido. Envie apenas imagens.');
+  }
+
+  // extensão baseada no nome original
+  const ext = (file.originalname.split('.').pop() || 'jpg').toLowerCase();
+  const filePath = `avatars/${randomUUID()}.${ext}`; // pasta + nome random
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('avatars') // mesmo nome do bucket
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+    });
+
+  if (uploadError) {
+    console.error('Erro upload imagem:', uploadError);
+    throw new Error('Erro ao salvar foto no storage');
+  }
+
+  const { data } = supabaseAdmin.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  return data.publicUrl; // URL usada no <img src="...">
+}
+
 /* ------------------------------------------------------------------
-   4. Rotas de páginas (HTML)
+   5. Rotas de páginas (HTML)
 ------------------------------------------------------------------- */
 const routes = [
   { path: '/', file: 'index.html' },
   { path: '/login', file: 'login.html' },
   { path: '/carteirinhaDigital', file: 'carteirinhaDigital.html' },
-  { path: '/cadastroUsu', file: 'cadastroUsu.html' },
-  { path: '/cadastroPublico', file: 'cadastroPublico.html' },
+  { path: '/cadastroUsu', file: 'cadastroUsu.html' },          // admin
+  { path: '/cadastroPublico', file: 'cadastroPublico.html' },  // público
 ];
 
 routes.forEach((route) => {
@@ -69,7 +132,7 @@ routes.forEach((route) => {
 });
 
 /* ------------------------------------------------------------------
-   5. Rotas de API - Autenticação e Usuários
+   6. Rotas de API - Autenticação e Usuário logado
 ------------------------------------------------------------------- */
 
 /**
@@ -142,22 +205,7 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
-    // tudo ok, monta objeto "seguro" pro front
-    const safeUser = {
-      id: user.id,
-      email: user.email,
-      nome: user.nome,
-      nomePerfil: user.nome_perfil,
-      curso: user.curso,
-      campus: user.campus,
-      matricula: user.matricula,
-      cpf: user.cpf,
-      numeroTel: user.numero_tel,
-      dataNascimento: user.data_nascimento,
-      validade: user.validade,
-      fotoUrl: user.foto_url,
-    };
-
+    const safeUser = mapUserToSafeUser(user);
     return res.json({ user: safeUser });
   } catch (err) {
     console.error('Erro /api/login:', err);
@@ -168,72 +216,126 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-
-/**
- * POST /api/admin/users
- * Criação de usuário (usada pela tela de admin)
- * Header: x-admin-password: ADMIN_PANEL_PASSWORD
- */
-app.post('/api/admin/users', requireAdmin, async (req, res) => {
+// GET /api/me/:id  -> busca dados atualizados do usuário logado
+app.get('/api/me/:id', async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      nome,
-      nomePerfil,
-      curso,
-      campus,
-      matricula,
-      cpf,
-      numeroTel,
-      dataNascimento,
-      validade,
-      fotoUrl,
-      status, // opcional (default 'active' ou 'pending')
-    } = req.body;
+    const { id } = req.params;
 
-    if (!email || !password || !nome || !nomePerfil) {
-      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
-    }
-
-    const password_hash = await bcrypt.hash(password, 10);
-
-    const { data, error } = await supabaseAdmin
+    const { data: user, error } = await supabaseAdmin
       .from('users')
-      .insert({
-        email,
-        password_hash,
-        nome,
-        nome_perfil: nomePerfil,
-        curso,
-        campus,
-        matricula,
-        cpf,
-        numero_tel: numeroTel,
-        data_nascimento: dataNascimento,
-        validade,
-        foto_url: fotoUrl,
-        status: status || 'active',
-      })
-      .select()
+      .select('*')
+      .eq('id', id)
       .single();
 
-    if (error) {
-      console.error('Erro Supabase (create user):', error);
-      return res.status(400).json({ error: error.message });
+    if (error && error.code === 'PGRST116') {
+      // not found
+      return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    return res.status(201).json(data);
+    if (error) {
+      console.error('Erro Supabase (/api/me):', error);
+      return res.status(500).json({ error: 'Erro ao buscar usuário' });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        error: 'Seu cadastro não está mais ativo.',
+        code: 'INACTIVE',
+        status: user.status,
+      });
+    }
+
+    const safeUser = mapUserToSafeUser(user);
+    return res.json({ user: safeUser });
   } catch (err) {
-    console.error('Erro /api/admin/users (POST):', err);
+    console.error('Erro /api/me/:id:', err);
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
 
+/* ------------------------------------------------------------------
+   7. Rotas de API - Admin (CRUD de usuários)
+------------------------------------------------------------------- */
+
+/**
+ * POST /api/admin/users
+ * Criação de usuário (tela de admin)
+ * Header: x-admin-password: ADMIN_PANEL_PASSWORD
+ */
+app.post(
+  '/api/admin/users',
+  requireAdmin,
+  upload.single('foto'),
+  async (req, res) => {
+    try {
+      const {
+        email,
+        password,
+        nome,
+        nomePerfil,
+        curso,
+        campus,
+        matricula,
+        cpf,
+        numeroTel,
+        dataNascimento,
+        validade,
+        status,
+      } = req.body;
+
+      if (!email || !password || !nome || !nomePerfil) {
+        return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+      }
+
+      let fotoUrl;
+      try {
+        fotoUrl = await uploadUserImage(req.file);
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+
+      const password_hash = await bcrypt.hash(password, 10);
+
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .insert({
+          email,
+          password_hash,
+          nome,
+          nome_perfil: nomePerfil,
+          curso,
+          campus,
+          matricula,
+          cpf,
+          numero_tel: numeroTel,
+          data_nascimento: dataNascimento,
+          validade,
+          foto_url: fotoUrl,
+          status: status || 'active',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase (create user):', error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.status(201).json(data);
+    } catch (err) {
+      console.error('Erro /api/admin/users (POST):', err);
+      return res.status(500).json({ error: 'Erro interno no servidor' });
+    }
+  }
+);
+
 /**
  * GET /api/admin/users
- * Lista todos os usuários (para a futura tela de admin)
- * Header: x-admin-password: ADMIN_PANEL_PASSWORD
+ * Lista todos os usuários (tela de admin)
  */
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
@@ -253,67 +355,79 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
-// Atualizar dados completos de um usuário (admin)
-app.put('/api/admin/users/:id', requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const {
-      email,
-      password,
-      nome,
-      nomePerfil,
-      curso,
-      campus,
-      matricula,
-      cpf,
-      numeroTel,
-      dataNascimento,
-      validade,
-      fotoUrl,
-      status,
-    } = req.body;
+// PUT /api/admin/users/:id – atualizar dados de um usuário
+app.put(
+  '/api/admin/users/:id',
+  requireAdmin,
+  upload.single('foto'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const updatePayload = {};
+      const {
+        email,
+        password,
+        nome,
+        nomePerfil,
+        curso,
+        campus,
+        matricula,
+        cpf,
+        numeroTel,
+        dataNascimento,
+        validade,
+        status,
+      } = req.body;
 
-    if (email !== undefined) updatePayload.email = email;
-    if (nome !== undefined) updatePayload.nome = nome;
-    if (nomePerfil !== undefined) updatePayload.nome_perfil = nomePerfil;
-    if (curso !== undefined) updatePayload.curso = curso;
-    if (campus !== undefined) updatePayload.campus = campus;
-    if (matricula !== undefined) updatePayload.matricula = matricula;
-    if (cpf !== undefined) updatePayload.cpf = cpf;
-    if (numeroTel !== undefined) updatePayload.numero_tel = numeroTel;
-    if (dataNascimento !== undefined) updatePayload.data_nascimento = dataNascimento;
-    if (validade !== undefined) updatePayload.validade = validade;
-    if (fotoUrl !== undefined) updatePayload.foto_url = fotoUrl;
-    if (status !== undefined) updatePayload.status = status;
+      const updatePayload = {};
 
-    // Se veio uma nova senha, atualiza o hash
-    if (password) {
-      updatePayload.password_hash = await bcrypt.hash(password, 10);
+      if (email !== undefined) updatePayload.email = email;
+      if (nome !== undefined) updatePayload.nome = nome;
+      if (nomePerfil !== undefined) updatePayload.nome_perfil = nomePerfil;
+      if (curso !== undefined) updatePayload.curso = curso;
+      if (campus !== undefined) updatePayload.campus = campus;
+      if (matricula !== undefined) updatePayload.matricula = matricula;
+      if (cpf !== undefined) updatePayload.cpf = cpf;
+      if (numeroTel !== undefined) updatePayload.numero_tel = numeroTel;
+      if (dataNascimento !== undefined) updatePayload.data_nascimento = dataNascimento;
+      if (validade !== undefined) updatePayload.validade = validade;
+      if (status !== undefined) updatePayload.status = status;
+
+      if (password) {
+        updatePayload.password_hash = await bcrypt.hash(password, 10);
+      }
+
+      if (req.file) {
+        try {
+          const novaFotoUrl = await uploadUserImage(req.file);
+          updatePayload.foto_url = novaFotoUrl;
+        } catch (err) {
+          return res.status(400).json({ error: err.message });
+        }
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .update(updatePayload)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase (update user):', error);
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json(data);
+    } catch (err) {
+      console.error('Erro /api/admin/users/:id (PUT):', err);
+      return res.status(500).json({ error: 'Erro interno no servidor' });
     }
-
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .update(updatePayload)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Erro Supabase (update user):', error);
-      return res.status(400).json({ error: error.message });
-    }
-
-    return res.json(data);
-  } catch (err) {
-    console.error('Erro /api/admin/users/:id (PUT):', err);
-    return res.status(500).json({ error: 'Erro interno no servidor' });
   }
-});
+);
 
-// Atualizar apenas o status (active/inactive/pending)
+// PATCH /api/admin/users/:id/status – atualizar apenas o status
 app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -343,7 +457,7 @@ app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
   }
 });
 
-// Excluir usuário
+// DELETE /api/admin/users/:id – excluir usuário
 app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -365,8 +479,12 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   }
 });
 
+/* ------------------------------------------------------------------
+   8. Cadastro público (/api/public/register)
+------------------------------------------------------------------- */
+
 // Cadastro público de usuário - status começa como 'inactive'
-app.post('/api/public/register', async (req, res) => {
+app.post('/api/public/register', upload.single('foto'), async (req, res) => {
   try {
     const {
       email,
@@ -380,10 +498,8 @@ app.post('/api/public/register', async (req, res) => {
       numeroTel,
       dataNascimento,
       validade,
-      fotoUrl,
     } = req.body;
 
-    // validações básicas
     if (!email || !password || !nome || !nomePerfil) {
       return res.status(400).json({
         error: 'Nome, Nome de Perfil, Email e Senha são obrigatórios',
@@ -406,6 +522,14 @@ app.post('/api/public/register', async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
+    // upload da foto
+    let fotoUrl;
+    try {
+      fotoUrl = await uploadUserImage(req.file);
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+
     const password_hash = await bcrypt.hash(password, 10);
 
     const { data, error } = await supabaseAdmin
@@ -423,7 +547,7 @@ app.post('/api/public/register', async (req, res) => {
         data_nascimento: dataNascimento,
         validade,
         foto_url: fotoUrl,
-        status: 'inactive', // 🔴 sempre começa inativo
+        status: 'inactive', // começa inativo
       })
       .select()
       .single();
@@ -443,26 +567,23 @@ app.post('/api/public/register', async (req, res) => {
   }
 });
 
-
-
 /* ------------------------------------------------------------------
-   6. Rota para salvar localização (mantida do seu código antigo)
+   9. Rota para salvar localização (legado)
 ------------------------------------------------------------------- */
 app.post('/saveLocation', (req, res) => {
   const { latitude, longitude } = req.body;
   console.log(`Localização recebida: Latitude: ${latitude}, Longitude: ${longitude}`);
 
-  // Aqui você pode processar ou armazenar a localização conforme necessário
   res.send('Localização recebida com sucesso');
 });
 
 /* ------------------------------------------------------------------
-   7. Rotas de email (já existiam)
+   10. Rotas de email
 ------------------------------------------------------------------- */
 app.use('/email', emailRoutes);
 
 /* ------------------------------------------------------------------
-   8. Inicializando o servidor
+   11. Inicializando o servidor
 ------------------------------------------------------------------- */
 app.listen(port, () => {
   console.log(`✅ Server is running on http://localhost:${port}`);

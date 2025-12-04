@@ -1,40 +1,84 @@
- // Recupera as informações do usuário do localStorage e exibe na página
- const userInfo = JSON.parse(localStorage.getItem('userInfo'));
- if (userInfo) {
-     document.getElementById('nome').innerHTML = `${userInfo.nomePerfil} `;
-     document.getElementById('email').innerHTML = `${userInfo.email} `;
-     document.getElementById('imgUsu').src = userInfo.fotoUrl;
-     document.getElementById('numeroTel').innerHTML = formatNumeroTel(userInfo.numeroTel);
-     document.getElementById('curso').innerHTML = `${userInfo.curso} `;
-     document.getElementById('validade').innerHTML = formatValidade(userInfo.validade);
-     document.getElementById('matricula').innerHTML = formatMatricula(userInfo.matricula);
+// dadosUser.js
 
-     const validadeDate = new Date (userInfo.validade);
-     const today = new Date();
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const stored = localStorage.getItem('userInfo');
+    let userInfo = stored ? JSON.parse(stored) : null;
 
-     if (validadeDate < today) {
-        document.getElementById('validade').style.color = 'red' ;
-     }
- } else {
-     alert('Informações do usuário não encontradas');
-     window.location.href = 'cadastroUsu.html'; // Redireciona para a página de cadastro se as informações não forem encontradas
- } ;
+    if (!userInfo || !userInfo.id) {
+      alert('Você precisa fazer login novamente.');
+      window.location.href = '/login';
+      return;
+    }
 
- const userInfoModal = JSON.parse(localStorage.getItem('userInfo'));
- if (userInfo) {
-     document.getElementById('fotoUrlModal').src = `${userInfoModal.fotoUrl}`
-     document.getElementById('nomeCompletoModal').innerHTML = `${userInfoModal.nome}`
-     document.getElementById('cpfModal').innerHTML = formatCPF(userInfo.cpf);
-     document.getElementById('dataNascimentoModal').innerHTML = formatDate(userInfo.dataNascimento);
-     document.getElementById('matriculaModal').innerHTML = formatMatricula(userInfo.matricula);
-     document.getElementById('validadeModal').innerHTML = formatValidade(userInfo.validade);
-     document.getElementById('cursoModal').innerHTML = `${userInfoModal.curso}`
-     document.getElementById('campusModal').innerHTML = `${userInfoModal.campus}`
+    // tenta buscar dados atualizados no backend
+    try {
+      const resp = await fetch(`/api/me/${userInfo.id}`);
+      const body = await resp.json().catch(() => ({}));
 
-     const validadeDate = new Date (userInfo.validade);
-     const today = new Date();
+      if (resp.ok) {
+        userInfo = body.user;
+        // atualiza snapshot salvo
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      } else if (resp.status === 403) {
+        alert(body.error || 'Seu cadastro não está ativo.');
+        window.location.href = '/login';
+        return;
+      } else if (resp.status === 404) {
+        alert('Usuário não encontrado. Faça login novamente.');
+        window.location.href = '/login';
+        return;
+      } else {
+        console.warn('Não foi possível atualizar dados do usuário:', body.error);
+        // segue usando o snapshot salvo no localStorage
+      }
+    } catch (e) {
+      console.warn('Falha ao buscar /api/me, usando dados locais:', e);
+    }
 
-     if (validadeDate < today) {
-        document.getElementById('validadeModal').style.color = 'red' ;
-     }
- } ;
+    // deixa disponível para outros scripts (abrirCarteirinha, sendEmail etc)
+    window.currentUser = userInfo;
+
+    preencherCarteirinha(userInfo);
+    preencherModal(userInfo);
+  } catch (err) {
+    console.error('Erro ao inicializar carteirinha:', err);
+    alert('Erro ao carregar dados do usuário. Faça login novamente.');
+    window.location.href = '/login';
+  }
+});
+
+function preencherCarteirinha(user) {
+  document.getElementById('nome').textContent = user.nomePerfil || '';
+  document.getElementById('email').textContent = user.email || '';
+  document.getElementById('imgUsu').src = user.fotoUrl || '';
+  document.getElementById('numeroTel').textContent = formatNumeroTel(user.numeroTel || '');
+  document.getElementById('curso').textContent = user.curso || '';
+  document.getElementById('matricula').textContent = formatMatricula(user.matricula || '');
+  document.getElementById('validade').textContent = formatValidade(user.validade || '');
+
+  const validadeDate = user.validade ? new Date(user.validade) : null;
+  const today = new Date();
+
+  if (validadeDate && validadeDate < today) {
+    document.getElementById('validade').style.color = 'red';
+  }
+}
+
+function preencherModal(user) {
+  document.getElementById('fotoUrlModal').src = user.fotoUrl || '';
+  document.getElementById('nomeCompletoModal').textContent = user.nome || '';
+  document.getElementById('cpfModal').textContent = formatCPF(user.cpf || '');
+  document.getElementById('dataNascimentoModal').textContent = formatDate(user.dataNascimento || '');
+  document.getElementById('matriculaModal').textContent = formatMatricula(user.matricula || '');
+  document.getElementById('validadeModal').textContent = formatValidade(user.validade || '');
+  document.getElementById('cursoModal').textContent = user.curso || '';
+  document.getElementById('campusModal').textContent = user.campus || '';
+
+  const validadeDate = user.validade ? new Date(user.validade) : null;
+  const today = new Date();
+
+  if (validadeDate && validadeDate < today) {
+    document.getElementById('validadeModal').style.color = 'red';
+  }
+}

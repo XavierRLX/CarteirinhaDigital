@@ -10,7 +10,8 @@
 <body>
   <h1>Cadastro de Usuário</h1>
 
-  <form id="registerForm">
+  <form id="registerForm" enctype="multipart/form-data">
+
     <label for="nome">Nome Completo:</label>
     <input type="text" id="nome" name="nome" required />
     <br />
@@ -55,9 +56,10 @@
     <input type="date" id="validade" name="validade" required />
     <br />
 
-    <label for="fotoUrl">URL da Foto:</label>
-    <input type="text" id="fotoUrl" name="fotoUrl" required />
-    <br />
+    <label for="foto">Foto:</label>
+<input type="file" id="foto" name="foto" accept="image/*" required />
+<br />
+
 
     <button type="submit">Cadastrar</button>
   </form>
@@ -65,55 +67,48 @@
   <a href="/login" title="Ir para Login">Já tenho conta</a>
 
   <script>
-    const form = document.getElementById('registerForm');
+  const form = document.getElementById('registerForm');
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-      const payload = {
-        nome: form.nome.value.trim(),
-        email: form.email.value.trim(),
-        nomePerfil: form.nomePerfil.value.trim(),
-        password: form.password.value,
-        curso: form.curso.value.trim(),
-        matricula: form.matricula.value.trim(),
-        cpf: form.cpf.value.trim(),
-        dataNascimento: form.dataNascimento.value,
-        numeroTel: form.numeroTel.value.trim(),
-        campus: form.campus.value.trim(),
-        validade: form.validade.value,
-        fotoUrl: form.fotoUrl.value.trim(),
-      };
+    const fotoInput = form.foto;
+    const fotoFile = fotoInput.files[0];
 
-      if (!payload.nome || !payload.email || !payload.nomePerfil || !payload.password) {
-        alert('Preencha Nome, Email, Nome de Perfil e Senha.');
+    if (!fotoFile) {
+      alert('Selecione uma foto.');
+      return;
+    }
+
+    if (!fotoFile.type.startsWith('image/')) {
+      alert('Arquivo inválido. Selecione uma imagem (jpeg, png, etc).');
+      return;
+    }
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch('/api/public/register', {
+        method: 'POST',
+        body: formData, // sem Content-Type manualmente
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        alert(data.error || 'Erro ao criar cadastro');
         return;
       }
 
-      try {
-        const response = await fetch('/api/public/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+      alert('Cadastro realizado! Seu usuário está INATIVO. Aguarde o administrador aprovar.');
+      form.reset();
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro no cadastro público:', error);
+      alert('Erro ao criar cadastro. Tente novamente.');
+    }
+  });
+</script>
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          alert(data.error || 'Erro ao criar cadastro');
-          return;
-        }
-
-        alert('Cadastro realizado! Seu usuário está INATIVO. Aguarde o administrador aprovar.');
-        form.reset();
-
-        // opcional: já mandar para login
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('Erro no cadastro público:', error);
-        alert('Erro ao criar cadastro. Tente novamente.');
-      }
-    });
-  </script>
 </body>
 </html>

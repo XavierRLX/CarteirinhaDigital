@@ -1,20 +1,26 @@
 document
   .getElementById("abrirCarteirinha")
   .addEventListener("click", function () {
-    const nome = userInfo.nomePerfil;
+    const user = window.currentUser;
+    if (!user) {
+      alert('Dados do usuário não encontrados. Faça login novamente.');
+      window.location.href = '/login';
+      return;
+    }
+
+    const nome = user.nomePerfil;
     const dia = new Date().toLocaleDateString("pt-BR");
     const hora = new Date().toLocaleTimeString("pt-BR");
 
-    // Função para enviar o email
     const sendEmail = () => {
       getLocationAndSendEmail(nome, dia, hora, "Não aplicável", "Não aplicável");
       document.getElementById("modal").style.display = "flex";
       document.getElementById("menu").style.display = "none";
     };
 
-    // Apenas enviar o email sem localização
-    sendEmail();
+   // sendEmail();
   });
+
 
 document.getElementById("closeModalBtn").addEventListener("click", function () {
   document.getElementById("modal").style.display = "none";
