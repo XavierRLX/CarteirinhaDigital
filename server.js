@@ -576,6 +576,118 @@ app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
   }
 });
 
+/* ------------------------------------------------------------------
+   Admin - Renovações de carteirinha
+------------------------------------------------------------------- */
+
+// Lista renovações de um usuário
+app.get('/api/admin/users/:id/renewals', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabaseAdmin
+      .from('card_renewals')
+      .select('*')
+      .eq('user_id', id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro Supabase (list renewals):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    console.error('Erro /api/admin/users/:id/renewals:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Aprovar renovação: ajusta validade pro próximo semestre e ativa o usuário
+app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newValidity } = req.body;
+
+    const { data: renewal, error: renewalError } = await supabaseAdmin
+      .from('card_renewals')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (renewalError || !renewal) {
+      console.error('Erro Supabase (get renewal):', renewalError);
+      return res.status(404).json({ error: 'Renovação não encontrada' });
+    }
+
+    const validade = newValidity || getNextSemesterValidity();
+
+    const { data: updatedUser, error: userError } = await supabaseAdmin
+      .from('users')
+      .update({
+        validade,
+        status: 'active',
+      })
+      .eq('id', renewal.user_id)
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('Erro Supabase (update user in approve):', userError);
+      return res.status(400).json({ error: userError.message });
+    }
+
+    const { error: updateRenewalError } = await supabaseAdmin
+      .from('card_renewals')
+      .update({ status: 'approved' })
+      .eq('id', id);
+
+    if (updateRenewalError) {
+      console.error('Erro Supabase (update renewal status):', updateRenewalError);
+      // não dou return aqui pra não desfazer usuário já atualizado
+    }
+
+    return res.json({ user: updatedUser });
+  } catch (err) {
+    console.error('Erro /api/admin/renewals/:id/approve:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Rejeitar renovação
+app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data: renewal, error: renewalError } = await supabaseAdmin
+      .from('card_renewals')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (renewalError || !renewal) {
+      console.error('Erro Supabase (get renewal):', renewalError);
+      return res.status(404).json({ error: 'Renovação não encontrada' });
+    }
+
+    const { error: updateRenewalError } = await supabaseAdmin
+      .from('card_renewals')
+      .update({ status: 'rejected' })
+      .eq('id', id);
+
+    if (updateRenewalError) {
+      console.error('Erro Supabase (update renewal status reject):', updateRenewalError);
+      return res.status(400).json({ error: updateRenewalError.message });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Erro /api/admin/renewals/:id/reject:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
 // DELETE /api/admin/users/:id – excluir usuário
 app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   try {

@@ -14,6 +14,7 @@
 <body class="bg-light">
   <div class="container-fluid py-4">
     <div class="row g-4">
+      <!-- COLUNA: FORMULÁRIO -->
       <div class="col-12 col-lg-4">
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
@@ -84,7 +85,10 @@
 
               <div class="mb-2">
                 <label for="validade" class="form-label">Validade da Carteirinha</label>
-                <input type="date" id="validade" name="validade" class="form-control" required />
+                <input type="date" id="validade" name="validade" class="form-control" />
+                <div class="form-text">
+                  Se deixar vazio, o sistema usa automaticamente o final do semestre atual.
+                </div>
               </div>
 
               <div class="mb-3">
@@ -123,13 +127,36 @@
         </div>
       </div>
 
+      <!-- COLUNA: LISTA -->
       <div class="col-12 col-lg-8">
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h2 class="h5 mb-0">Lista de Usuários</h2>
               <span class="badge bg-secondary" id="userCountBadge"></span>
             </div>
+
+            <!-- Busca + Filtros -->
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+              <div class="flex-grow-1">
+                <input
+                  type="text"
+                  id="searchInput"
+                  class="form-control form-control-sm"
+                  placeholder="Buscar por nome, email ou matrícula"
+                />
+              </div>
+              <div style="min-width: 180px;">
+                <select id="statusFilter" class="form-select form-select-sm">
+                  <option value="all">Todos</option>
+                  <option value="active">Ativos</option>
+                  <option value="inactive">Inativos</option>
+                  <option value="pending">Pendentes</option>
+                  <option value="expired">Com validade expirada</option>
+                </select>
+              </div>
+            </div>
+
             <div class="table-responsive">
               <table class="table table-sm align-middle">
                 <thead class="table-light">
@@ -139,6 +166,7 @@
                     <th>Status</th>
                     <th>Telefone</th>
                     <th>Validade</th>
+                    <th>Renovações</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -147,8 +175,8 @@
                 </tbody>
               </table>
             </div>
-            <p class="text-muted small mb-0">
-              Use os botões para ativar, inativar, editar ou excluir usuários.
+            <p class="text-muted small mb-0 mt-2">
+              Use os filtros para encontrar usuários e aprove/gerencie renovações de carteirinha.
             </p>
           </div>
         </div>
@@ -156,291 +184,46 @@
     </div>
   </div>
 
+  <!-- MODAL: renovações -->
+  <div class="modal fade" id="renewalsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Renovações de carteirinha</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-2">
+            Aqui aparecem os pedidos de renovação deste usuário. Use os botões para aprovar ou rejeitar.
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Data</th>
+                  <th>Status</th>
+                  <th>Comprovante</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="renewalsTableBody">
+                <!-- preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/javaScript/ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/javaScript/ui.js"></script>
 
   <script>
-    const ADMIN_PASSWORD = 'RumoaoDima24@'; 
-
-    let usersCache = [];
-    let editingUserId = null;
-
-    function solicitarSenhaAdmin() {
-      const inputPassword = prompt('Por favor, insira a senha de administrador:');
-      if (inputPassword !== ADMIN_PASSWORD) {
-        showAlert('Senha de administrador incorreta!', 'error');
-        window.location.href = '/login';
-        return false;
-      }
-      return true;
-    }
-
-    async function loadUsers() {
-      const tbody = document.getElementById('userList');
-      const badge = document.getElementById('userCountBadge');
-
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="text-center text-muted py-3">
-            Carregando usuários...
-          </td>
-        </tr>
-      `;
-
-      try {
-        const response = await fetch('/api/admin/users', {
-          method: 'GET',
-          headers: {
-            'x-admin-password': ADMIN_PASSWORD,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="text-center text-danger py-3">
-                Erro ao carregar usuários: ${data.error || 'Erro desconhecido'}
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        usersCache = Array.isArray(data) ? data : [];
-        badge.textContent = usersCache.length + ' usuário(s)';
-
-        if (usersCache.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="text-center text-muted py-3">
-                Nenhum usuário cadastrado.
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        tbody.innerHTML = '';
-
-        usersCache.forEach((user) => {
-          const tr = document.createElement('tr');
-
-          tr.innerHTML = `
-            <td>${user.nome || ''}</td>
-            <td>${user.email || ''}</td>
-            <td>
-              <span class="badge bg-${user.status === 'active' ? 'success' : (user.status === 'pending' ? 'warning' : 'secondary')}">
-                ${user.status}
-              </span>
-            </td>
-            <td>${user.numero_tel || ''}</td>
-            <td>${user.validade || ''}</td>
-            <td>
-              <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-outline-primary" onclick="editUser('${user.id}')">Editar</button>
-                <button type="button" class="btn btn-outline-success" onclick="changeStatus('${user.id}', 'active')">Ativar</button>
-                <button type="button" class="btn btn-outline-warning" onclick="changeStatus('${user.id}', 'inactive')">Inativar</button>
-                <button type="button" class="btn btn-outline-danger" onclick="deleteUser('${user.id}')">Excluir</button>
-              </div>
-            </td>
-          `;
-
-          tbody.appendChild(tr);
-        });
-      } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="text-center text-danger py-3">
-              Erro ao carregar usuários.
-            </td>
-          </tr>
-        `;
-      }
-    }
-
-    function preencherFormComUsuario(user) {
-      const form = document.getElementById('registerForm');
-
-      form.userId.value = user.id;
-      form.nome.value = user.nome || '';
-      form.nomePerfil.value = user.nome_perfil || '';
-      form.email.value = user.email || '';
-      form.curso.value = user.curso || '';
-      form.campus.value = user.campus || '';
-      form.matricula.value = user.matricula || '';
-      form.cpf.value = user.cpf || '';
-      form.numeroTel.value = user.numero_tel || '';
-      form.dataNascimento.value = user.data_nascimento || '';
-      form.validade.value = user.validade || '';
-      form.password.value = '';
-      if (form.foto) form.foto.value = '';
-    }
-
-    function resetForm() {
-      const form = document.getElementById('registerForm');
-      form.reset();
-      form.userId.value = '';
-      if (form.foto) form.foto.value = '';
-      editingUserId = null;
-
-      document.getElementById('submitBtn').textContent = 'Registrar';
-      document.getElementById('cancelEditBtn').style.display = 'none';
-    }
-
-    async function handleRegisterSubmit(event) {
-      event.preventDefault();
-
-      const form = event.target;
-      const isEditing = !!editingUserId;
-      const fotoInput = form.foto;
-
-      const formData = new FormData();
-
-      formData.append('nome', form.nome.value.trim());
-      formData.append('nomePerfil', form.nomePerfil.value.trim());
-      formData.append('email', form.email.value.trim());
-      formData.append('curso', form.curso.value.trim());
-      formData.append('campus', form.campus.value.trim());
-      formData.append('matricula', form.matricula.value.trim());
-      formData.append('cpf', form.cpf.value.trim());
-      formData.append('numeroTel', form.numeroTel.value.trim());
-      formData.append('dataNascimento', form.dataNascimento.value);
-      formData.append('validade', form.validade.value);
-
-      if (!isEditing) {
-        if (!form.password.value) {
-          showAlert('Senha é obrigatória para novo usuário.', 'warning');
-          return;
-        }
-        formData.append('password', form.password.value);
-      } else if (form.password.value) {
-        formData.append('password', form.password.value);
-      }
-
-      if (!isEditing && (!fotoInput.files || !fotoInput.files[0])) {
-        showAlert('Selecione uma foto para o usuário.', 'warning');
-        return;
-      }
-
-      if (fotoInput.files && fotoInput.files[0]) {
-        formData.append('foto', fotoInput.files[0]);
-      }
-
-      try {
-        const url = isEditing
-          ? `/api/admin/users/${editingUserId}`
-          : '/api/admin/users';
-        const method = isEditing ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'x-admin-password': ADMIN_PASSWORD,
-          },
-          body: formData,
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          showAlert(data.error || 'Erro ao salvar usuário.', 'error');
-          return;
-        }
-
-        showAlert(
-          isEditing ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!',
-          'success'
-        );
-
-        resetForm();
-        loadUsers();
-      } catch (error) {
-        console.error('Erro ao salvar usuário:', error);
-        showAlert('Erro ao salvar usuário. Tente novamente.', 'error');
-      }
-    }
-
-    // Funções globais usadas pelos botões da tabela
-    window.editUser = function (id) {
-      const user = usersCache.find((u) => u.id === id);
-      if (!user) {
-        showAlert('Usuário não encontrado.', 'error');
-        return;
-      }
-
-      editingUserId = id;
-      preencherFormComUsuario(user);
-
-      document.getElementById('submitBtn').textContent = 'Salvar alterações';
-      document.getElementById('cancelEditBtn').style.display = 'inline-block';
-    };
-
-    window.changeStatus = async function (id, newStatus) {
-      if (!confirm(`Deseja realmente alterar o status para "${newStatus}"?`)) return;
-
-      try {
-        const response = await fetch(`/api/admin/users/${id}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-password': ADMIN_PASSWORD,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          showAlert(data.error || 'Erro ao alterar status.', 'error');
-          return;
-        }
-
-        showAlert('Status atualizado com sucesso!', 'success');
-        loadUsers();
-      } catch (error) {
-        console.error('Erro ao alterar status:', error);
-        showAlert('Erro ao alterar status.', 'error');
-      }
-    };
-
-    window.deleteUser = async function (id) {
-      if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
-
-      try {
-        const response = await fetch(`/api/admin/users/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'x-admin-password': ADMIN_PASSWORD,
-          },
-        });
-
-        if (!response.ok && response.status !== 204) {
-          const data = await response.json().catch(() => ({}));
-          showAlert(data.error || 'Erro ao excluir usuário.', 'error');
-          return;
-        }
-
-        showAlert('Usuário excluído com sucesso.', 'success');
-        loadUsers();
-      } catch (error) {
-        console.error('Erro ao excluir usuário:', error);
-        showAlert('Erro ao excluir usuário.', 'error');
-      }
-    };
-
-    window.addEventListener('DOMContentLoaded', () => {
-      if (!solicitarSenhaAdmin()) return;
-
-      loadUsers();
-
-      const registerForm = document.getElementById('registerForm');
-      registerForm.addEventListener('submit', handleRegisterSubmit);
-
-      document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
-    });
-  </script>
-</body>
-</html>
