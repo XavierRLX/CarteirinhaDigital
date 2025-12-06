@@ -1,49 +1,671 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carregando...</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#020617" />
+  <title>UPA • Carteirinha Digital do Estudante</title>
+
+  <!-- Bootstrap 5 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Lucide Icons (opcional, para os ícones das seções) -->
+  <script src="https://unpkg.com/lucide@latest" defer></script>
+
+  <style>
+    :root {
+      --upa-bg: #020617;          /* fundo geral (quase preto-azul) */
+      --upa-card-top: #024b4a;    /* verde-azulado do topo */
+      --upa-card-top2: #002a4a;   /* azul profundo do topo */
+      --upa-accent: #16a34a;      /* verde destaque (status ativo) */
+      --upa-accent-soft: rgba(22, 163, 74, 0.12);
+      --upa-warning: #facc15;     /* amarelo da sigla UPA */
+      --upa-pill: #0f172a;        /* chips / pills */
+      --upa-grey: #f3f4f6;        /* fundo claro para cards internos */
+      --upa-text-main: #f9fafb;
+      --upa-text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 55%),
+        radial-gradient(circle at bottom, rgba(22, 163, 74, 0.15), transparent 55%),
+        var(--upa-bg);
+      color: var(--upa-text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    .upa-shell {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .upa-shell-inner {
+      width: 100%;
+      max-width: 480px;
+      padding: 1rem 0 2.5rem;
+      margin: 0 auto;
+    }
+
+    .upa-main-card {
+      background-color: #020617;
+      background-image: linear-gradient(
+        145deg,
+        rgba(15, 23, 42, 1) 0%,
+        rgba(15, 23, 42, 1) 55%,
+        rgba(8, 47, 73, 1) 100%
+      );
+      border-radius: 0;
+      box-shadow: none;
+      padding: 1.25rem 1.25rem 1.75rem;
+    }
+
+    @media (min-width: 576px) {
+      .upa-shell-inner {
+        padding-inline: 1.25rem;
+      }
+
+      .upa-main-card {
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      }
+    }
+
+    .upa-header {
+      display: flex;
+      gap: 0.9rem;
+      align-items: center;
+      margin-bottom: 1.4rem;
+    }
+
+    .upa-logo-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 20%, #facc15, #14532d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .upa-logo-wrap img {
+      width: 90%;
+      height: auto;
+      display: block;
+    }
+
+    .upa-badge-upa {
+      text-transform: uppercase;
+      color: var(--upa-warning);
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      margin-bottom: 0.1rem;
+    }
+
+    .upa-title-main {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+    }
+
+    .upa-subtitle {
+      font-size: 0.8rem;
+      color: var(--upa-text-muted);
+      margin: 0;
+    }
+
+    .upa-hero {
+      margin-bottom: 1.4rem;
+    }
+
+    .upa-hero h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .upa-hero p {
+      font-size: 0.87rem;
+      color: var(--upa-text-muted);
+      margin-bottom: 0.7rem;
+    }
+
+    .upa-tagline-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      font-size: 0.75rem;
+      color: #e5e7eb;
+      margin-bottom: 0.85rem;
+    }
+
+    .upa-tagline-pill span {
+      color: var(--upa-accent);
+      font-weight: 600;
+    }
+
+    .upa-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .upa-actions .btn {
+      font-size: 0.9rem;
+      border-radius: 999px;
+      padding-block: 0.55rem;
+    }
+
+    .btn-upa-primary {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      border: none;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .btn-upa-primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-upa-ghost {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+      background: transparent;
+    }
+
+    .btn-upa-ghost:hover {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    @media (min-width: 480px) {
+      .upa-actions {
+        flex-direction: row;
+      }
+    }
+
+    /* Card "como funciona" */
+    .upa-how-card {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 0.9rem 1rem 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .upa-how-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .upa-how-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 0;
+      font-size: 0.8rem;
+      color: var(--upa-text-muted);
+    }
+
+    .upa-how-list li {
+      display: flex;
+      gap: 0.45rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .upa-how-dot {
+      margin-top: 0.33rem;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 999px;
+      background: var(--upa-accent);
+      flex-shrink: 0;
+    }
+
+    /* Carousel box */
+    .upa-carousel-card {
+      background: #f9fafb;
+      border-radius: 1.25rem;
+      padding: 0.9rem 0.85rem 1rem;
+      color: #111827;
+    }
+
+    .upa-carousel-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .upa-carousel-sub {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 0.7rem;
+    }
+
+    .upa-carousel-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 2px solid rgba(15, 23, 42, 0.15);
+      flex-shrink: 0;
+    }
+
+    .upa-carousel-role {
+      font-size: 0.78rem;
+      color: #6b7280;
+      margin-bottom: 0.25rem;
+    }
+
+    .upa-carousel-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+    }
+
+    .upa-carousel-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .badge-serio {
+      background: rgba(37, 99, 235, 0.12);
+      color: #1d4ed8;
+    }
+
+    .badge-zoeira {
+      background: rgba(249, 115, 22, 0.14);
+      color: #ea580c;
+    }
+
+    .upa-carousel-text {
+      font-size: 0.78rem;
+      color: #4b5563;
+      margin-bottom: 0;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+      width: 2rem;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      filter: invert(1) grayscale(100);
+    }
+
+    .carousel-indicators [data-bs-target] {
+      background-color: #020617;
+    }
+
+    /* Features */
+    .upa-features {
+      margin-top: 1.15rem;
+      margin-bottom: 1rem;
+    }
+
+    .upa-feature {
+      display: flex;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+      color: var(--upa-text-muted);
+      margin-bottom: 0.6rem;
+      align-items: flex-start;
+    }
+
+    .upa-feature-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      flex-shrink: 0;
+    }
+
+    .upa-feature-icon svg {
+      width: 16px;
+      height: 16px;
+      color: var(--upa-warning);
+    }
+
+    .upa-feature-title {
+      font-weight: 500;
+      color: #e5e7eb;
+      margin-bottom: 0.1rem;
+    }
+
+    /* Rodapé */
+    .upa-footer {
+      margin-top: 0.6rem;
+      font-size: 0.7rem;
+      color: var(--upa-text-muted);
+      text-align: center;
+    }
+
+    .upa-footer a {
+      color: #9ca3af;
+      text-decoration: underline;
+    }
+
+    .upa-footer a:hover {
+      color: #e5e7eb;
+    }
+  </style>
 </head>
-
-<style>
-    /* Estilos para a animação de carregamento */
-    #loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background-color: white;
-        z-index: 1000;
-    }
-
-    .spinner {
-        width: 50px;
-        height: 50px;
-        border: 8px solid rgba(0, 0, 0, 0.1);
-        border-top-color: #000;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-</style>
 <body>
-    <div id="loading">
-        <div class="spinner"></div>
-    </div>
-</body>
+  <div class="upa-shell">
+    <div class="upa-shell-inner">
+      <main class="upa-main-card">
+        <!-- Header -->
+        <header class="upa-header">
+          <div class="upa-logo-wrap">
+            <img
+              src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/logo_universidade_UPA_removebg.png"
+              alt="Brasão da Universidade Pedro de Alcântara"
+            />
+          </div>
+          <div>
+            <div class="upa-badge-upa">UPA</div>
+            <div class="upa-title-main">Universidade Pedro de Alcântara</div>
+            <p class="upa-subtitle">Sistema de Carteirinha Digital do Estudante</p>
+          </div>
+        </header>
 
-<script>
-setTimeout(() => {
-            window.location.href = 'login';
-        }, 3000);
-</script>
+        <!-- Hero -->
+        <section class="upa-hero">
+          <div class="upa-tagline-pill">
+            <span>Nova!</span> Carteirinha digital fictícia para brincar de faculdade
+          </div>
+
+          <h2>
+            Imagine ver como seria estudar na faculdade dos seus sonhos…
+          </h2>
+          <p>
+            Monte uma carteirinha digital completa, com curso, campus, foto e matrícula.
+            Use como portfólio divertido, simulação de layout ou para brincar com os amigos.
+          </p>
+          <p>
+            Você pode criar algo sério como <strong>Direito</strong> ou inventar
+            um clássico da zoeira, tipo
+            <strong>Engenharia de Bebidas</strong> 🍻.
+          </p>
+        </section>
+
+        <!-- Ações -->
+        <section class="upa-actions">
+          <a href="/cadastroPublico" class="btn btn-upa-primary w-100">
+            Criar minha carteirinha agora
+          </a>
+          <a href="/login" class="btn btn-upa-ghost w-100">
+            Já tenho carteirinha
+          </a>
+        </section>
+
+        <!-- Como funciona -->
+        <section class="upa-how-card">
+          <div class="upa-how-title">Como funciona?</div>
+          <ul class="upa-how-list">
+            <li>
+              <span class="upa-how-dot"></span>
+              <span>Cadastre seu nome, curso, campus e envie uma foto de perfil.</span>
+            </li>
+            <li>
+              <span class="upa-how-dot"></span>
+              <span>
+                A validade da carteirinha é calculada automaticamente por semestre
+                (até julho ou dezembro).
+              </span>
+            </li>
+            <li>
+              <span class="upa-how-dot"></span>
+              <span>
+                Quando expirar, você pode enviar um comprovante fake de renovação
+                e simular todo o fluxo administrativo.
+              </span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Carrossel de perfis -->
+        <section class="upa-carousel-card mb-3">
+          <h3 class="upa-carousel-title">Veja na prática</h3>
+          <p class="upa-carousel-sub">
+            Perfis sérios e perfis para dar risada — tudo usando o mesmo modelo
+            de carteirinha.
+          </p>
+
+          <div id="profilesCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+              <button
+                type="button"
+                data-bs-target="#profilesCarousel"
+                data-bs-slide-to="0"
+                class="active"
+                aria-current="true"
+                aria-label="Slide 1"
+              ></button>
+              <button
+                type="button"
+                data-bs-target="#profilesCarousel"
+                data-bs-slide-to="1"
+                aria-label="Slide 2"
+              ></button>
+              <button
+                type="button"
+                data-bs-target="#profilesCarousel"
+                data-bs-slide-to="2"
+                aria-label="Slide 3"
+              ></button>
+              <button
+                type="button"
+                data-bs-target="#profilesCarousel"
+                data-bs-slide-to="3"
+                aria-label="Slide 4"
+              ></button>
+            </div>
+
+            <div class="carousel-inner">
+              <!-- Renata - perfil sério 1 -->
+              <div class="carousel-item active">
+                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
+                  <img
+                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_renata_portela_02.png"
+                    alt="Exemplo de perfil sério da estudante Renata"
+                    class="upa-carousel-avatar"
+                  />
+                  <div>
+                    <div class="upa-carousel-role">Perfil acadêmico</div>
+                    <div class="upa-carousel-name">Renata Portela</div>
+                    <div class="upa-carousel-badge badge-serio">Modo sério</div>
+                    <p class="upa-carousel-text">
+                      Curso tradicional, foto formal e dados completos. Perfeito para
+                      simular como ficaria sua carteirinha em uma universidade real.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Renata - perfil sério 2 -->
+              <div class="carousel-item">
+                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
+                  <img
+                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_renata_portela_01.png"
+                    alt="Segundo exemplo de perfil sério da estudante Renata"
+                    class="upa-carousel-avatar"
+                  />
+                  <div>
+                    <div class="upa-carousel-role">Portfolio & currículo</div>
+                    <div class="upa-carousel-name">Renata Portela</div>
+                    <div class="upa-carousel-badge badge-serio">Apresentação profissional</div>
+                    <p class="upa-carousel-text">
+                      Use a carteirinha digital como elemento visual em portfólios,
+                      mockups ou trabalhos acadêmicos de UI/UX.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lucas - perfil zoeira 1 -->
+              <div class="carousel-item">
+                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
+                  <img
+                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_lucas.jpg"
+                    alt="Perfil divertido de Lucas, estudante fictício"
+                    class="upa-carousel-avatar"
+                  />
+                  <div>
+                    <div class="upa-carousel-role">Modo zoeira</div>
+                    <div class="upa-carousel-name">Lucas “Testes de Qualidade”</div>
+                    <div class="upa-carousel-badge badge-zoeira">Engenharia de Bebidas</div>
+                    <p class="upa-carousel-text">
+                      Crie cursos fictícios como Engenharia de Bebidas, Memes Aplicados
+                      ou Ciência da Procrastinação e engane seus amigos no grupo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lucas - perfil zoeira 2 -->
+              <div class="carousel-item">
+                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
+                  <img
+                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_lucas_02.jpg"
+                    alt="Segundo perfil divertido de Lucas, estudante fictício"
+                    class="upa-carousel-avatar"
+                  />
+                  <div>
+                    <div class="upa-carousel-role">Diversão garantida</div>
+                    <div class="upa-carousel-name">Lucas – Intercâmbio em Hogwarts</div>
+                    <div class="upa-carousel-badge badge-zoeira">Magia & Dados</div>
+                    <p class="upa-carousel-text">
+                      Brinque com combinações impossíveis de cursos, faculdades e
+                      semestres. A carteirinha é fake, mas as risadas são reais.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Controles -->
+            <button
+              class="carousel-control-prev"
+              type="button"
+              data-bs-target="#profilesCarousel"
+              data-bs-slide="prev"
+            >
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Anterior</span>
+            </button>
+            <button
+              class="carousel-control-next"
+              type="button"
+              data-bs-target="#profilesCarousel"
+              data-bs-slide="next"
+            >
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Próximo</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Features / destaques -->
+        <section class="upa-features">
+          <div class="upa-feature">
+            <div class="upa-feature-icon">
+              <i data-lucide="id-card"></i>
+            </div>
+            <div>
+              <div class="upa-feature-title">Visual realista de carteirinha</div>
+              <div>
+                Layout inspirado em carteirinhas reais, com foto, curso, campus,
+                matrícula formatada e período de validade por semestre.
+              </div>
+            </div>
+          </div>
+
+          <div class="upa-feature">
+            <div class="upa-feature-icon">
+              <i data-lucide="party-popper"></i>
+            </div>
+            <div>
+              <div class="upa-feature-title">Modo sério ou modo zoeira</div>
+              <div>
+                Use para estudos, protótipos e portfólio ou simplesmente para
+                criar perfis engraçados e compartilhar com a galera.
+              </div>
+            </div>
+          </div>
+
+          <div class="upa-feature">
+            <div class="upa-feature-icon">
+              <i data-lucide="shield-alert"></i>
+            </div>
+            <div>
+              <div class="upa-feature-title">Aviso importante</div>
+              <div>
+                Projeto acadêmico, sem validade oficial. Não utilize como documento
+                real de identificação ou vínculo estudantil.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Rodapé -->
+        <footer class="upa-footer">
+          <p class="mb-1">
+            UPA • Universidade Pedro de Alcântara – Sistema de Carteirinha Digital.
+          </p>
+          <p class="mb-1">
+            Renovação simbólica a cada semestre ajuda a manter este projeto online.
+          </p>
+          <p class="mb-0">
+            Dúvidas ou suporte:
+            <a href="mailto:universidadepedrodealcantara@gmail.com">
+              universidadepedrodealcantara@gmail.com
+            </a>
+          </p>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Inicializa ícones Lucide (se o script já tiver carregado)
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
 </html>
