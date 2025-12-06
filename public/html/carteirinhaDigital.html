@@ -1,186 +1,263 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#144bc9">
-    <link rel="stylesheet" href="/style/styleCD.css">
-    <title>Carteirinha Digital</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b2c4a">
+  <link rel="stylesheet" href="/style/styleCD.css">
+  <title>Carteirinha Digital - UPA</title>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
+  <div class="carteirinha-app">
+    <!-- TOPO (CARD PRINCIPAL) -->
     <section class="parteAzul">
-        <header>
-            <section>
-                <div class="iconsImg">
-                    <img id="imgUsu" src="" alt="fotoEstudante">
-                    <p></p>
-                </div>
-                <h1 id="nome">Nome</h1>
-                <h2 id="email">email</h2>
-                <h2 id="numeroTel">numero</h2>
-            </section>
-        </header>
-        <p id="curso">nome do curso aqui</p>
-        <div class="cardTop">
-            <div class="logo">
-                <img src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/logo-estacio.png"
-                    alt="logo">
-            </div>
+      <header class="header-upa">
+        <div class="logo-universidade">
+          <img
+            src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/logo_universidade_UPA_removebg.png"
+            alt="Logotipo Universidade Pedro de Alcântara"
+          />
         </div>
+        <div class="titulo-universidade">
+          <p class="sigla">UPA</p>
+          <h1>Universidade Pedro de Alcântara</h1>
+          <p class="subtitulo">Carteirinha Digital do Estudante</p>
+        </div>
+      </header>
+
+      <section class="identificacao-usuario">
+        <div class="iconsImg">
+          <div class="avatar-wrapper">
+            <img id="imgUsu" src="" alt="Foto do Estudante">
+          </div>
+        </div>
+
+        <div class="dados-basicos">
+          <h2 id="nome">Nome do Estudante</h2>
+          <p id="email" class="texto-secundario">email@exemplo.com</p>
+          <p id="numeroTel" class="texto-secundario">(__) _____-____</p>
+        </div>
+      </section>
+
+      <p id="curso" class="curso-atual">Curso atual</p>
+
+      <div class="cardTop">
+        <div class="info-institucional">
+          <span id="statusCarteirinha" class="badge-ativa">Carteirinha ativa</span>
+          <span class="ano-letivo" id="anoLetivoLabel"></span>
+        </div>
+      </div>
     </section>
+
+    <!-- PARTE BRANCA / DETALHES -->
     <section class="parteBranca">
-        <div class="cardBottom">
-            <div class="cardBottomMatricula">
-                <p>Matrícula</p>
-                <p id="matricula">n matricula</p>
-            </div>
-            <div class="cardBottomValidade">
-                <p>Validade</p>
-                <p id="validade">dt validade</p>
-            </div>
+      <div class="cardBottom">
+        <div class="cardBottomMatricula">
+          <p class="label">Matrícula</p>
+          <p id="matricula" class="valor">0000 0000 0000</p>
         </div>
-        <div id="abrirCarteirinha" class="containerAcessarCarteirinha">
-            <img id="iconAC" src="https://cdn-icons-png.flaticon.com/128/7778/7778088.png" alt="iconAC">
-            <p id="acessarCarteirinha">Acessar Carteirinha</p>
+        <div class="cardBottomValidade">
+          <p class="label">Validade</p>
+          <p id="validade" class="valor">Jan 2025</p>
         </div>
-        <section class="btnsPerfilConteiner">
-            <h2>Meu perfil</h2>
-            <div class="conteinerBtnsPerfil">
-                <div class="btnsPerfil">
-                    <img 
-                    srcset="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/meusDados.jpg"
-                    alt="iconMeusDados">
-                    <p>Meus dados</p>
-                </div>
-                <div class="btnsPerfil">
-                    <img src="https://cdn-icons-png.flaticon.com/128/2319/2319201.png" alt="iconMeusDados">
-                    <p>Privacidade</p>
-                </div>
-                <div class="btnsPerfil">
-                    <img src="https://cdn-icons-png.flaticon.com/128/1947/1947270.png" alt="iconMeusDados">
-                    <p>Envio de documentação</p>
-                </div>
-            </div>
-        </section>
-        <footer>
-            <p class="textC versaoApp">Versão do Aplicativo 5.29.0.</p>
-            <a href="/login" title="cadastro Usuário">
-                <p class="textC sairApp">Sair do APP</p>
-            </a>
-            <div id="aviso" class="aviso">
-                <p id="btnAviso">X - Fechar Aviso</p>
-                <h3>Atenção !!!</h3>
-                <p>Este site é apenas para fins acadêmicos e de prática. Não deve ser usado para falsificação ou qualquer outro uso indevido. </p>
-            </div>
-        </footer>
-        <nav id="menu">
-            <section>
-                <div class="btnFooter">
-                    <img id="btnIni"
-                    src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/home.jpg"
-                        alt="btnInicio">
-                    <p>Início</p>
-                </div>
-                <div class="btnFooter">
-                    <img id="btnCar"
-                    src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/carreira.jpg"
-                        alt="Carreira">
-                    <p>Carrerias</p>
-                </div>
-                <div class="btnFooter">
-                    <img id="btnFin"
-                    src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/financeiro.jpg"
-                        alt="Financeiro">
-                    <p>Financeiro</p>
-                </div>
-                <div class="btnFooter">
-                    <img id="btnSup"
-                    src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/suporte.jpg"
-                        alt="Suporte">
-                    <p>Suporte</p>
-                </div>
-                <div class="btnFooter">
-                    <img id="btnPer"
-                    src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/perfil.jpg"
-                        alt="Perfil">
-                    <p class="btnPerfA">Perfil</p>
-                </div>
-            </section>
+      </div>
 
-        </nav>
+      <div id="abrirCarteirinha" class="containerAcessarCarteirinha">
+        <div class="btn-acessar">
+          <i id="iconAC" data-lucide="id-card"></i>
+          <div>
+            <p id="acessarCarteirinha" class="titulo-acessar">Acessar carteirinha completa</p>
+            <p class="descricao-acessar">Toque para visualizar todos os dados da sua carteirinha.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÁREA DE PERFIL / OPÇÕES -->
+      <section class="btnsPerfilConteiner">
+        <h2>Meu perfil</h2>
+        <div class="conteinerBtnsPerfil">
+          <div class="btnsPerfil">
+            <i data-lucide="user-2"></i>
+            <p>Meus dados</p>
+          </div>
+          <div class="btnsPerfil">
+            <i data-lucide="shield"></i>
+            <p>Privacidade</p>
+          </div>
+          <div class="btnsPerfil">
+            <i data-lucide="file-text"></i>
+            <p>Envio de documentação</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <p class="textC versaoApp">
+          UPA · Sistema de Carteirinha Digital · Versão 1.0.0
+        </p>
+        <a href="/login" title="Sair do aplicativo">
+          <p class="textC sairApp">Sair da conta</p>
+        </a>
+      </footer>
+
+      <!-- NAV INFERIOR -->
+      <nav id="menu" class="bottom-nav">
+        <section>
+          <div class="btnFooter">
+            <i id="btnIni" data-lucide="home"></i>
+            <p>Início</p>
+          </div>
+          <div class="btnFooter">
+            <i id="btnCar" data-lucide="briefcase"></i>
+            <p>Carreira</p>
+          </div>
+          <div class="btnFooter">
+            <i id="btnFin" data-lucide="credit-card"></i>
+            <p>Financeiro</p>
+          </div>
+          <div class="btnFooter">
+            <i id="btnSup" data-lucide="headset"></i>
+            <p>Suporte</p>
+          </div>
+          <div class="btnFooter">
+            <i id="btnPer" data-lucide="user-circle-2"></i>
+            <p class="btnPerfA">Perfil</p>
+          </div>
+        </section>
+      </nav>
     </section>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span id="closeModalBtn" class="close">
-                <img
-                src="https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/setaVolta.jpg"
-                alt="setaVolta">
-            </span>
-            <section id="modalCarteirinha">
-                <div id="imgModal">
-                    <img id="fotoUrlModal" src="" alt="fotoEstudante">
-                    <p id="nomeCompletoModal">Nome</p>
-                </div>
-                <div class="grupoA flex">
-                    <div>
-                        <p class="corC">CPF</p>
-                        <p class="corP" id="cpfModal">9999999</p>
-                    </div>
-                    <div>
-                        <p class="corC">Nascimento</p>
-                        <p class="corP" id="dataNascimentoModal"></p>
-                    </div>
-                </div>
-                <div class="grupoA flex">
-                    <div>
-                        <p class="corC">Matrícula</p>
-                        <p class="corP" id="matriculaModal">9999999</p>
-                    </div>
-                    <div>
-                        <p class="corC">Validade</p>
-                        <p class="corP" id="validadeModal">jun 2024</p>
-                    </div>
-                </div>
-                <div class="grupoB">
-                    <div>
-                        <p class="corC">Curso (Ativo)</p>
-                        <p class="corP" id="cursoModal"></p>
-                    </div>
-                    <div>
-                        <p class="corC">Campus</p>
-                        <p class="corP" id="campusModal"></p>
-                    </div>
-                </div>
-        </section>
-        <section class="footerModal textC"> 
-            <img src="https://sia.estacio.br/sianet/Content/estacio/SiteNovo/dist/img/logos/logo-estacio-sia-v2.png" alt="logoEstacio">
-            <p class="corC">Válido mediante apresentação de documento com foto.</p>
-        </section>
-        </div>
-    </div>
-    </div>
-    <div id="modalExpirada" class="modal">
-  <div class="modal-content">
-    <h3>Carteirinha expirada</h3>
-    <p>
-      Sua carteirinha está fora da validade. Para continuar utilizando, é
-      necessário solicitar a renovação enviando o comprovante de pagamento.
-    </p>
-    <button id="btnRenovarCarteirinha">Renovar carteirinha</button>
-    <button id="btnFecharExpirada">Fechar</button>
   </div>
-</div>
 
-<script src="/javaScript/formatacao.js"></script>
-<script src="/javaScript/dadosUser.js"></script>
-<script src="/javaScript/modalCarteirinha.js"></script>
-<script src="/javaScript/sendEmail.js"></script>
-<script src="/javaScript/verificaLocal.js"></script>
+  <!-- MODAL CARTEIRINHA COMPLETA -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span id="closeModalBtn" class="close">
+        <i data-lucide="arrow-left"></i>
+      </span>
+
+      <section id="modalCarteirinha" class="modal-carteirinha">
+        <div id="imgModal" class="modal-header-upa">
+          <div class="modal-logo">
+            <img
+              src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/logo_universidade_UPA_removebg.png"
+              alt="Logo UPA"
+            />
+          </div>
+          <div class="modal-identificacao">
+            <!-- FOTO MAIOR AQUI -->
+            <img id="fotoUrlModal" src="" alt="Foto do Estudante">
+            <p id="nomeCompletoModal">Nome Completo</p>
+          </div>
+        </div>
+
+        <div class="grupoA flex">
+          <div>
+            <p class="corC">CPF</p>
+            <p class="corP" id="cpfModal">000.000.000-00</p>
+          </div>
+          <div>
+            <p class="corC">Nascimento</p>
+            <p class="corP" id="dataNascimentoModal"></p>
+          </div>
+        </div>
+
+        <div class="grupoA flex">
+          <div>
+            <p class="corC">Matrícula</p>
+            <p class="corP" id="matriculaModal">0000 0000 0000</p>
+          </div>
+          <div>
+            <p class="corC">Validade</p>
+            <p class="corP" id="validadeModal">Jul 2025</p>
+          </div>
+        </div>
+
+        <div class="grupoB">
+          <div>
+            <p class="corC">Curso (Ativo)</p>
+            <p class="corP" id="cursoModal"></p>
+          </div>
+          <div>
+            <p class="corC">Campus</p>
+            <p class="corP" id="campusModal"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="footerModal textC">
+        <p class="corC">
+          Universidade Pedro de Alcântara ·
+          Carteirinha válida mediante apresentação de documento oficial com foto.
+        </p>
+      </section>
+    </div>
+  </div>
+
+  <!-- MODAL CARTEIRINHA EXPIRADA -->
+  <div id="modalExpirada" class="modal">
+    <div class="modal-content modal-expirada-content">
+      <h3>Carteirinha expirada</h3>
+      <p>
+        Sua carteirinha está fora da validade. Para continuar utilizando o acesso digital,
+        é necessário solicitar a renovação e enviar o comprovante de pagamento.
+      </p>
+      <div class="modal-expirada-actions">
+        <button id="btnRenovarCarteirinha" class="btn btn-primary">
+          Renovar carteirinha
+        </button>
+        <button id="btnFecharExpirada" class="btn btn-outline-secondary">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL AVISO (tela cheia) -->
+  <div id="aviso" class="modal modal-aviso">
+    <div class="modal-content modal-aviso-content">
+      <h3>Uso apenas acadêmico</h3>
+      <p>
+        Este sistema de carteirinha digital é destinado exclusivamente para fins
+        acadêmicos, estudos e demonstração.
+      </p>
+      <p>
+        Não utilize esta carteirinha como documento oficial, para comprovação
+        acadêmica, identificação em órgãos públicos, instituições financeiras
+        ou qualquer outro uso formal.
+      </p>
+      <button id="btnAviso" class="btn btn-primary w-100 mt-3">
+        Li e entendi
+      </button>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="/javaScript/formatacao.js"></script>
+  <script src="/javaScript/dadosUser.js"></script>
+  <script src="/javaScript/modalCarteirinha.js"></script>
+  <script src="/javaScript/sendEmail.js"></script>
+  <script src="/javaScript/verificaLocal.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      // valor padrão de ano letivo; depois o dadosUser.js sobrescreve com base na validade real
+      const anoLabel = document.getElementById('anoLetivoLabel');
+      if (anoLabel) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const semestre = now.getMonth() + 1 <= 6 ? '1º semestre' : '2º semestre';
+        anoLabel.textContent = `${semestre} · ${year}`;
+      }
+    });
+  </script>
 </body>
-
-
 </html>

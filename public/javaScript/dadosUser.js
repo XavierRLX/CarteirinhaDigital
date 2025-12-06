@@ -24,12 +24,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // snapshot do momento do login
+  // Snapshot do momento do login
   preencherCarteirinha(userInfo);
   preencherModal(userInfo);
   window.currentUser = userInfo;
 
-  // tenta buscar dados atualizados no backend (se tiver id)
+  // Tenta buscar dados atualizados no backend (se tiver id)
   if (!userInfo.id) {
     console.warn('userInfo.id está vazio; usando apenas dados locais.');
     aplicarRegrasDeExpiracao(userInfo);
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.warn('Erro ao chamar /api/me, usando dados locais:', err);
   }
 
-  // no final, aplica sempre a regra de expiração com a melhor info que tivermos
+  // Aplica regra de expiração com a melhor info que tivermos
   aplicarRegrasDeExpiracao(userInfo);
 });
 
@@ -74,13 +74,13 @@ function preencherCarteirinha(user) {
   document.getElementById('matricula').textContent = formatMatricula(user.matricula || '');
   document.getElementById('validade').textContent = formatValidade(user.validade || '');
 
-  const validadeDate = user.validade ? new Date(user.validade) : null;
-  const today = new Date();
-
-  if (validadeDate && validadeDate < today) {
-    document.getElementById('validade').style.color = 'red';
-  } else {
-    document.getElementById('validade').style.color = '';
+  // Atualiza label de ano letivo com base na validade
+  const anoLabel = document.getElementById('anoLetivoLabel');
+  if (anoLabel && user.validade) {
+    const [year, month] = String(user.validade).split('-');
+    const m = parseInt(month, 10);
+    const semestre = m <= 6 ? '1º semestre' : '2º semestre';
+    anoLabel.textContent = `${semestre} · ${year}`;
   }
 }
 
@@ -93,15 +93,6 @@ function preencherModal(user) {
   document.getElementById('validadeModal').textContent = formatValidade(user.validade || '');
   document.getElementById('cursoModal').textContent = user.curso || '';
   document.getElementById('campusModal').textContent = user.campus || '';
-
-  const validadeDate = user.validade ? new Date(user.validade) : null;
-  const today = new Date();
-
-  if (validadeDate && validadeDate < today) {
-    document.getElementById('validadeModal').style.color = 'red';
-  } else {
-    document.getElementById('validadeModal').style.color = '';
-  }
 }
 
 function aplicarRegrasDeExpiracao(user) {
@@ -113,21 +104,50 @@ function aplicarRegrasDeExpiracao(user) {
     user.isExpired === true ||
     (validadeDate && validadeDate < today);
 
-  if (!isExpired) {
-    return;
-  }
-
-  // desabilita botão "Acessar Carteirinha"
+  const statusBadge = document.getElementById('statusCarteirinha');
+  const validadeEl = document.getElementById('validade');
+  const validadeModalEl = document.getElementById('validadeModal');
   const btnAcessar = document.getElementById('abrirCarteirinha');
-  if (btnAcessar) {
-    btnAcessar.style.opacity = '0.5';
-    btnAcessar.style.pointerEvents = 'none';
-  }
-
-  // mostra modal de carteirinha expirada, se existir no HTML
   const modalExp = document.getElementById('modalExpirada');
-  if (modalExp) {
-    modalExp.style.display = 'flex';
+
+  if (isExpired) {
+    // badge vermelha
+    if (statusBadge) {
+      statusBadge.textContent = 'Carteirinha expirada';
+      statusBadge.classList.remove('badge-ativa');
+      statusBadge.classList.add('badge-expirada');
+    }
+
+    if (validadeEl) validadeEl.style.color = 'red';
+    if (validadeModalEl) validadeModalEl.style.color = 'red';
+
+    if (btnAcessar) {
+      btnAcessar.style.opacity = '0.5';
+      btnAcessar.style.pointerEvents = 'none';
+    }
+
+    if (modalExp) {
+      modalExp.style.display = 'flex';
+    }
+  } else {
+    // badge verde
+    if (statusBadge) {
+      statusBadge.textContent = 'Carteirinha ativa';
+      statusBadge.classList.remove('badge-expirada');
+      statusBadge.classList.add('badge-ativa');
+    }
+
+    if (validadeEl) validadeEl.style.color = '';
+    if (validadeModalEl) validadeModalEl.style.color = '';
+
+    if (btnAcessar) {
+      btnAcessar.style.opacity = '1';
+      btnAcessar.style.pointerEvents = 'auto';
+    }
+
+    if (modalExp) {
+      modalExp.style.display = 'none';
+    }
   }
 }
 
@@ -150,4 +170,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Modal de aviso "uso acadêmico"
+  const aviso = document.getElementById('aviso');
+  const btnAviso = document.getElementById('btnAviso');
+  if (aviso && btnAviso) {
+    btnAviso.addEventListener('click', () => {
+      aviso.style.display = 'none';
+    });
+  }
+
+  // Abrir / fechar modal da carteirinha completa (fallback caso modalCarteirinha.js não trate)
+  const abrirCarteirinha = document.getElementById('abrirCarteirinha');
+  const modal = document.getElementById('modal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const menu = document.getElementById('menu');
+
+  if (abrirCarteirinha && modal) {
+    abrirCarteirinha.addEventListener('click', () => {
+      const user = window.currentUser;
+      if (!user) {
+        alert('Dados do usuário não encontrados. Faça login novamente.');
+        window.location.href = '/login';
+        return;
+      }
+      modal.style.display = 'flex';
+      if (menu) menu.style.display = 'none';
+    });
+  }
+
+  if (closeModalBtn && modal) {
+    closeModalBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      if (menu) menu.style.display = 'block';
+    });
+  }
+
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+      if (menu) menu.style.display = 'block';
+    }
+  });
 });

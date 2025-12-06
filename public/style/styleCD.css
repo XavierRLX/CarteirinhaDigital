@@ -1,309 +1,526 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-
-:root {
-    --corAzul: #144bc9;
-    --corLetraCinza: #919090;
-    --corBlack: #000
+/* Reset básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    max-width: 600px;
-    margin: 0 auto;
-    font-family: "Roboto", sans-serif;
-    font-weight: 400 ;
-}
-#email, #nome, #numeroTel {
-    font-size: 1.2em;
-}
-.textC {
-    text-align: center;
-}
-.flex {
-    display: flex;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #020617;
+  color: #111827;
+  min-height: 100vh;
 }
 
-.corP {
-    color: var(--corBlack);
-}
-.corC{
-    color: var(--corLetraCinza);
-}
- .parteAzul {
-    background-color: #144bc9 ;
-    color: #fff;
-    padding: 20px 20px 0 20px;
- }
- .parteBranca {
-    background-color: #f2f2f2;
-    color: #000 ;
-    padding: 0 20px 20px 20px;
- }
-
-header{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-header > section > div > img {
-    margin-top: 40px;
+/* Container principal do app (agora tela cheia sempre) */
+.carteirinha-app {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  background: #f8fafc;
 }
 
-header > section > h1 {
-    margin-top: -10px;
-    font-weight: 600;
+/* ---------------- PARTE AZUL (cabeçalho) ---------------- */
+
+.parteAzul {
+  background: linear-gradient(135deg, #0b2c4a, #124f3a);
+  color: #e5f3ff;
+  padding: 16px 18px 12px;
 }
 
-header > section > #numeroTel {
-    margin:  -10px 0 30px 0;
+.header-upa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-header > section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    text-align: center; /* Centraliza o texto dentro da section */
+.logo-universidade img {
+  width: 64px;
+  height: auto;
+  display: block;
 }
 
-header > section > div > img {
-    width: 4em;
-    height: 4em;
-    border-radius: 50%;
+.titulo-universidade {
+  flex: 1;
 }
 
-header > section > div.iconsImg {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+.titulo-universidade .sigla {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #facc15;
+  margin-bottom: 2px;
 }
 
-#curso{
-    margin-bottom: 20px;
+.titulo-universidade h1 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
- .cardTop {
-    max-width: 100%;
-    height: 4.9em;
-    margin: 0 auto;
-    border: solid 2px #fff;
-    background-color: #ffffff4f;
-    padding: 30px;
-    border-radius: 25px 25px 0 0 ;
+.titulo-universidade .subtitulo {
+  font-size: 0.75rem;
+  opacity: 0.9;
 }
-.cardTop img {
-    width: 8.5em;
+
+.identificacao-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.avatar-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(250, 204, 21, 0.9);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.avatar-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dados-basicos h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.texto-secundario {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.curso-atual {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: rgba(15, 118, 110, 0.25);
+  padding: 6px 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.cardTop {
+  margin-top: 10px;
+}
+
+.info-institucional {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+/* status */
+.badge-ativa,
+.badge-expirada {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.badge-ativa {
+  background: #22c55e;
+  color: #052e16;
+}
+
+.badge-expirada {
+  background: #dc2626;
+  color: #fef2f2;
+}
+
+.ano-letivo {
+  opacity: 0.9;
+}
+
+/* ---------------- PARTE BRANCA (conteúdo) ---------------- */
+
+.parteBranca {
+  background: #f8fafc;
+  padding: 16px 14px 70px; /* espaço pro bottom nav */
 }
 
 .cardBottom {
-    max-width: 100%;
-    height: 7em ;
-    background-color: rgb(255, 255, 255);
-    box-shadow: 0px 15px 50px -10px rgba(0, 0, 0, 0.5);
-    border-radius: 0 0 25px 25px ;   
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    font-size: 0.8em;
-    margin-top: -3px;
-}
-.containerAcessarCarteirinha{
-    margin: 35px 0 35px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  margin-bottom: 14px;
 }
 
-#iconAC{
-    width: 22px;
-    height: 22px;
-    margin-right: 8px;
+.cardBottomMatricula,
+.cardBottomValidade {
+  flex: 1;
 }
 
-#acessarCarteirinha{
-    margin-left: 8px;
+.cardBottom .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
 }
-.btnsPerfilConteiner {
-    font-size: 0.9em;
+
+.cardBottom .valor {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
 }
+
+/* Botão Acessar Carteirinha */
+.containerAcessarCarteirinha {
+  margin-bottom: 18px;
+}
+
+.btn-acessar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #0b2c4a;
+  color: #e5f3ff;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+}
+
+.btn-acessar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.35);
+  background: #0f3b5f;
+}
+
+.btn-acessar i {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.titulo-acessar {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.descricao-acessar {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+/* Botões de perfil */
+.btnsPerfilConteiner h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
 .conteinerBtnsPerfil {
-  
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-    justify-items: center;
-    align-items: center;
-    justify-content: space-evenly;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .btnsPerfil {
-    width: 80%; 
-    height: 8em;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 15px;
-    border: solid 2px #ece9e9;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin: 5px 0 5px 0;
+  flex: 1;
+  background: #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.12s ease;
 }
 
-.btnsPerfil > img {
-    width: 2em;
-}
-.versaoApp{
-    margin-top: 20px;
-    color:#919090;
-}
-.sairApp{
-    font-weight: 500;
-    color: var(--corAzul);
-    margin-bottom: 100px;
+.btnsPerfil:hover {
+  background: #d4d4d8;
+  transform: translateY(-1px);
 }
 
-a {
-    text-decoration: none;
+.btnsPerfil i {
+  display: block;
+  margin: 0 auto 6px;
+  width: 20px;
+  height: 20px;
 }
 
-/* Estilo para o menu */
-#menu {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 5em;
-    background-color: #fff; /* Cor de fundo do menu */
-    
-    z-index: 1000; /* Garante que o menu fique acima de outros elementos */
+.btnsPerfil p {
+  font-size: 0.75rem;
+  font-weight: 500;
 }
-#menu > section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    color: var(--corLetraCinza);
+
+/* Footer */
+footer {
+  margin-top: 18px;
 }
-/* Estilo para os botões do menu */
+
+.textC {
+  text-align: center;
+}
+
+.versaoApp {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.sairApp {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #b91c1c;
+  margin-top: 8px;
+}
+
+/* ---------------- Bottom nav ---------------- */
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.bottom-nav section {
+  display: flex;
+  justify-content: space-around;
+  background: #0f172a;
+  padding: 8px 10px 10px;
+}
+
 .btnFooter {
-    text-align: center;
-    padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  color: #9ca3af;
+  font-size: 0.7rem;
 }
 
-.btnFooter img {
-    margin-bottom: -8px ;
-} 
-
-#btnIni, #btnSup, #btnFin, #btnPer{
-    width: 24px;
-    height: 24px;
-}
-#btnPer{
-    width: 22px;
-}
-#btnFin{
-    width: 16px;
-}
-#btnIni {
-    width: 22px;
-}
-#btnCar {
-    width: 22px;
-    height: 26px;
+.btnFooter i {
+  width: 18px;
+  height: 18px;
 }
 
-.btnFooter p {
-font-size: 13px;
+.btnPerfA,
+.btnFooter p.btnPerfA {
+  color: #facc15;
+  font-weight: 600;
 }
 
-.btnPerfA {
-    color: #144bc9;
-}
-
-.aviso {
-
-    margin-bottom: 130px;
-    box-shadow: 0px 5px 20px -5px rgba(0, 0, 0, 0.5);
-    background-color: rgb(240, 102, 102);
-    padding: 10px;
-    border-radius: 15px;
-}
-
-
-
-:root {
-    --modal-max-width: 600px;
-}
+/* ---------------- Modal base ---------------- */
 
 .modal {
-    display: none;
-    position: fixed; 
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro semitransparente */
+  display: none;
+  position: fixed;
+  z-index: 50;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(15, 23, 42, 0.75);
 }
 
 .modal-content {
-    background-image: url('https://mjjumtkxcqbdbynzmqqh.supabase.co/storage/v1/object/public/fotosUrl/fundoCarteirinha.jpg'); /* Link da imagem de papel de parede */
-    background-size: cover;
-    background-position: center;
-    width: 100%;
-    max-width: var(--modal-max-width);
-    height: 100%;
-    position: relative;
-    font-size: 0.9em;
-
+  background-color: #f8fafc;
+  margin: 40px auto;
+  border-radius: 18px;
+  max-width: 420px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
 }
 
 .close {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    color: white;
-    font-size: 30px;
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  cursor: pointer;
 }
 
-.close img {
-    width: 15px;
+/* ---------------- Modal carteirinha completa ---------------- */
+
+.modal-carteirinha {
+  padding: 8px 16px 16px;
 }
 
-#modalCarteirinha{
-    padding-top: 3em;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-direction: column;
-    font-weight: 500;
+.modal-header-upa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #0b2c4a, #124f3a);
+  color: #e5f3ff;
 }
 
-#imgModal {
-    text-align: center;
-    
-    font-size: 1em;
+.modal-logo img {
+  width: 52px;
+  height: auto;
 }
 
-#fotoUrlModal {
-    width: 6em;
-    height:6em;
-    border-radius: 50%;
+.modal-identificacao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.grupoA{
-    width: 80%;
-    display: flex;
-    justify-content: space-between;
+/* FOTO maior no modal */
+.modal-identificacao img {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(250, 204, 21, 0.8);
 }
+
+.modal-identificacao p {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.grupoA,
 .grupoB {
-    width: 80%;
+  padding: 10px 4px;
+  margin: 0 12px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.footerModal img{
-    margin-top: 30px;
-    width: 9em;
+.flex {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.corC {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.corP {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.footerModal {
+  padding: 10px 16px 14px;
+  background: #e5e7eb;
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+/* ---------------- Modal expirada ---------------- */
+
+.modal-expirada-content {
+  padding: 18px 18px 16px;
+}
+
+.modal-expirada-content h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #b91c1c;
+}
+
+.modal-expirada-content p {
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.modal-expirada-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ---------------- Modal aviso (tela cheia) ---------------- */
+
+#aviso.modal-aviso {
+  display: flex; /* começa aberto ao carregar */
+}
+
+.modal-aviso-content {
+  margin: 0 auto;
+  min-height: 100vh;
+  border-radius: 0;
+  padding: 24px 18px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
+.modal-aviso-content h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #0b2c4a;
+}
+
+.modal-aviso-content p {
+  font-size: 0.9rem;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.mt-3 {
+  margin-top: 0.75rem;
+}
+
+/* ---------------- Botões genéricos ---------------- */
+
+.btn {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+}
+
+.btn-primary {
+  background: #0b2c4a;
+  color: #f9fafb;
+}
+
+.btn-primary:hover {
+  background: #0f3b5f;
+}
+
+.btn-outline-secondary {
+  background: transparent;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+/* ---------------- Responsividade ---------------- */
+
+@media (max-width: 480px) {
+  .modal-content {
+    max-width: 100%;
+    border-radius: 0;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  .parteBranca {
+    padding-bottom: 80px;
+  }
 }
