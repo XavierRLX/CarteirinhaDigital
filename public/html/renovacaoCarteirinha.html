@@ -18,8 +18,11 @@
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
             <h1 class="h5 mb-3 text-center">Renovação da Carteirinha</h1>
+            <p class="text-muted small mb-2 text-center">
+              Sua carteirinha está expirada. Para continuar utilizando o acesso digital, é necessário renovar.
+            </p>
             <p class="text-muted small mb-4 text-center">
-              Sua carteirinha está expirada. Envie o comprovante de pagamento para solicitar a renovação.
+              <strong>Taxa de renovação:</strong> R$ 20,00 (valor válido para o período atual da carteirinha).
             </p>
 
             <div class="mb-3">
@@ -40,7 +43,8 @@
                   required
                 />
                 <div class="form-text">
-                  Envie uma foto nítida do comprovante (JPEG, PNG, etc).
+                  Envie uma foto nítida do comprovante de pagamento no valor de
+                  <strong>R$ 20,00</strong> (JPEG, PNG, etc).
                 </div>
               </div>
 
@@ -69,8 +73,17 @@
           </div>
         </div>
 
-        <p class="text-center text-muted small mt-3">
-          Seu pedido será analisado por um administrador. Você será liberado após a aprovação.
+        <p class="text-center text-muted small mt-3 mb-1">
+          Seu pedido será analisado por um administrador. A carteirinha será liberada após a confirmação do pagamento.
+        </p>
+        <p class="text-center text-muted small mb-1">
+          <strong>Ajude a manter o nosso site online:</strong> a taxa de renovação contribui para a manutenção e continuidade deste projeto acadêmico.
+        </p>
+        <p class="text-center text-muted small">
+          Dúvidas ou suporte: 
+          <a href="mailto:universidadepedrodealcantara@gmail.com" class="link-secondary">
+            universidadepedrodealcantara@gmail.com
+          </a>
         </p>
       </div>
     </div>
@@ -98,7 +111,8 @@
         return;
       }
 
-      document.getElementById('nomeUsuario').textContent = currentUser.nome || currentUser.nomePerfil || '';
+      document.getElementById('nomeUsuario').textContent =
+        currentUser.nome || currentUser.nomePerfil || '';
       document.getElementById('emailUsuario').textContent = currentUser.email || '';
       document.getElementById('validadeAtual').textContent = currentUser.validade || '';
 
