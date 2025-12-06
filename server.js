@@ -157,7 +157,6 @@ function getNextSemesterValidity(now = new Date()) {
 // verifica se está expirada (true = expirada)
 function isCardExpired(validade) {
   if (!validade) return true;
-  // assumindo formato YYYY-MM-DD vindo do Supabase (tipo date)
   const todayStr = new Date().toISOString().slice(0, 10);
   return validade < todayStr;
 }
@@ -187,7 +186,7 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // (Opcional) impedir múltiplos pendentes
+    // impedir múltiplos pendentes
     const { data: existing, error: existingError } = await supabaseAdmin
       .from('card_renewals')
       .select('id, status')
@@ -212,8 +211,7 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       .insert({
         user_id: userId,
         proof_url: proofUrl,
-        // se quiser salvar mensagem:
-        // mensagem: mensagem || null,
+        mensagem: mensagem || null, 
       })
       .select()
       .single();
@@ -224,7 +222,8 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
     }
 
     return res.status(201).json({
-      message: 'Pedido de renovação enviado com sucesso. Aguarde aprovação do administrador.',
+      message:
+        'Pedido de renovação enviado com sucesso. Aguarde aprovação do administrador.',
       renewalId: renewal.id,
     });
   } catch (err) {
@@ -257,8 +256,6 @@ routes.forEach((route) => {
 
 /**
  * POST /api/login
- * Body: { email, password }
- * Retorna: { user: {...} } se ok
  */
 app.post('/api/login', async (req, res) => {
   try {
@@ -287,7 +284,6 @@ app.post('/api/login', async (req, res) => {
 
     const user = users && users[0];
 
-    // usuário não encontrado
     if (!user) {
       return res.status(401).json({
         error: 'Email ou senha inválidos',
@@ -297,7 +293,6 @@ app.post('/api/login', async (req, res) => {
 
     const passwordOk = await bcrypt.compare(password, user.password_hash);
 
-    // senha errada
     if (!passwordOk) {
       return res.status(401).json({
         error: 'Email ou senha inválidos',
@@ -305,7 +300,6 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
-    // status diferente de active
     if (user.status !== 'active') {
       let msg = 'Usuário não está ativo.';
       let code = 'INACTIVE';
@@ -336,7 +330,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// GET /api/me/:id  -> dados atualizados do usuário logado + flag de expiração
+// GET /api/me/:id
 app.get('/api/me/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -382,11 +376,6 @@ app.get('/api/me/:id', async (req, res) => {
    8. Rotas de API - Admin (CRUD de usuários)
 ------------------------------------------------------------------- */
 
-/**
- * POST /api/admin/users
- * Criação de usuário (tela de admin)
- * Header: x-admin-password: ADMIN_PANEL_PASSWORD
- */
 app.post(
   '/api/admin/users',
   requireAdmin,
@@ -455,7 +444,6 @@ app.post(
   }
 );
 
-// GET /api/admin/users – lista todos os usuários (tela de admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -475,7 +463,6 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
   }
 });
 
-// PUT /api/admin/users/:id – atualizar dados de um usuário
 app.put(
   '/api/admin/users/:id',
   requireAdmin,
@@ -509,7 +496,8 @@ app.put(
       if (matricula !== undefined) updatePayload.matricula = matricula;
       if (cpf !== undefined) updatePayload.cpf = cpf;
       if (numeroTel !== undefined) updatePayload.numero_tel = numeroTel;
-      if (dataNascimento !== undefined) updatePayload.data_nascimento = dataNascimento;
+      if (dataNascimento !== undefined)
+        updatePayload.data_nascimento = dataNascimento;
       if (validade !== undefined) updatePayload.validade = validade;
       if (status !== undefined) updatePayload.status = status;
 
@@ -546,7 +534,6 @@ app.put(
   }
 );
 
-// PATCH /api/admin/users/:id/status – atualizar apenas o status
 app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -580,7 +567,6 @@ app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
    Admin - Renovações de carteirinha
 ------------------------------------------------------------------- */
 
-// Lista renovações de um usuário
 app.get('/api/admin/users/:id/renewals', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -603,7 +589,6 @@ app.get('/api/admin/users/:id/renewals', requireAdmin, async (req, res) => {
   }
 });
 
-// Aprovar renovação: ajusta validade pro próximo semestre e ativa o usuário
 app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -644,7 +629,6 @@ app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
 
     if (updateRenewalError) {
       console.error('Erro Supabase (update renewal status):', updateRenewalError);
-      // não dou return aqui pra não desfazer usuário já atualizado
     }
 
     return res.json({ user: updatedUser });
@@ -654,7 +638,6 @@ app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
   }
 });
 
-// Rejeitar renovação
 app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -676,7 +659,10 @@ app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
       .eq('id', id);
 
     if (updateRenewalError) {
-      console.error('Erro Supabase (update renewal status reject):', updateRenewalError);
+      console.error(
+        'Erro Supabase (update renewal status reject):',
+        updateRenewalError
+      );
       return res.status(400).json({ error: updateRenewalError.message });
     }
 
@@ -687,8 +673,6 @@ app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
   }
 });
 
-
-// DELETE /api/admin/users/:id – excluir usuário
 app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -711,10 +695,9 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   9. Cadastro público (/api/public/register)
+   9. Cadastro público
 ------------------------------------------------------------------- */
 
-// Cadastro público de usuário - status = active e validade automática por semestre
 app.post('/api/public/register', upload.single('foto'), async (req, res) => {
   try {
     const {
@@ -736,7 +719,6 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
       });
     }
 
-    // evitar email duplicado
     const { data: existing, error: existingError } = await supabaseAdmin
       .from('users')
       .select('id')
@@ -752,7 +734,6 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
       return res.status(400).json({ error: 'Email já cadastrado' });
     }
 
-    // upload da foto
     let fotoUrl;
     try {
       fotoUrl = await uploadUserImage(req.file);

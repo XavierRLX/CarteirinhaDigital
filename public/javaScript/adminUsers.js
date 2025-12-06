@@ -21,6 +21,23 @@ function computeIsExpired(validade) {
   return validade < todayStr;
 }
 
+// escapar HTML para evitar XSS quando exibimos observações
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// truncar texto longo
+function truncate(str, max = 80) {
+  if (!str) return '';
+  return str.length <= max ? str : str.slice(0, max - 3) + '...';
+}
+
 // prompt simples de autenticação do painel
 function solicitarSenhaAdmin() {
   const inputPassword = prompt('Por favor, insira a senha de administrador:');
@@ -140,7 +157,7 @@ function renderUserTable() {
       <td>${user.validade || ''} ${expiredBadge}</td>
       <td>
         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="viewRenewals('${user.id}')">
-          Ver
+          Ver pedidos
         </button>
       </td>
       <td>
@@ -344,7 +361,7 @@ window.viewRenewals = async function (userId) {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="4" class="text-center text-muted py-3">
+      <td colspan="5" class="text-center text-muted py-3">
         Carregando renovações...
       </td>
     </tr>
@@ -361,7 +378,7 @@ window.viewRenewals = async function (userId) {
     if (!response.ok) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="4" class="text-center text-danger py-3">
+          <td colspan="5" class="text-center text-danger py-3">
             Erro ao carregar renovações: ${data.error || 'Erro desconhecido'}
           </td>
         </tr>
@@ -373,7 +390,7 @@ window.viewRenewals = async function (userId) {
     console.error('Erro ao carregar renovações:', err);
     tbody.innerHTML = `
       <tr>
-        <td colspan="4" class="text-center text-danger py-3">
+        <td colspan="5" class="text-center text-danger py-3">
           Erro ao carregar renovações.
         </td>
       </tr>
@@ -393,7 +410,7 @@ function renderRenewalsTable(renewals) {
   if (!renewals.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="4" class="text-center text-muted py-3">
+        <td colspan="5" class="text-center text-muted py-3">
           Nenhum pedido de renovação encontrado para este usuário.
         </td>
       </tr>
@@ -414,6 +431,12 @@ function renderRenewalsTable(renewals) {
     else if (r.status === 'approved') statusBadgeClass = 'success';
     else if (r.status === 'rejected') statusBadgeClass = 'danger';
 
+    const fullObs = r.mensagem || '';
+    const obsShort = truncate(fullObs, 80);
+    const obsCell = fullObs
+      ? `<span title="${escapeHtml(fullObs)}">${escapeHtml(obsShort)}</span>`
+      : '<span class="text-muted small">-</span>';
+
     tr.innerHTML = `
       <td>${createdDate}</td>
       <td><span class="badge bg-${statusBadgeClass}">${r.status}</span></td>
@@ -422,6 +445,7 @@ function renderRenewalsTable(renewals) {
           Abrir comprovante
         </a>
       </td>
+      <td>${obsCell}</td>
       <td>
         ${
           r.status === 'pending'
