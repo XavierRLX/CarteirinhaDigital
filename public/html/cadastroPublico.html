@@ -220,8 +220,8 @@
         </div>
 
         <p class="text-center text-muted small mt-3">
-          Seu cadastro será analisado por um administrador antes da liberação.
-        </p>
+          Sua carteirinha digital ficará ativa até o último dia da validade informada pelo sistema. Após esse período será necessário solicitar renovação.
+          </p>
       </div>
     </div>
   </div>
@@ -271,8 +271,9 @@
           </ol>
 
           <p class="mb-0 text-muted small">
-            Após o envio, seu cadastro passará por análise. Você será avisado quando sua carteirinha estiver liberada.
-          </p>
+  Após o envio, sua carteirinha será criada e ficará ativa até o último dia da validade atual. Depois desse prazo, será necessário realizar a renovação para continuar utilizando.
+</p>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
@@ -426,7 +427,7 @@
         showAlert('Cadastro realizado! Aguarde análise e liberação da carteirinha.', 'success');
         form.reset();
         preencherValidadeAutomatica();
-        preencherAnosInicio(); // recria as opções e volta pro placeholder
+        preencherAnosInicio(); 
 
         setTimeout(() => {
           window.location.href = '/login';
