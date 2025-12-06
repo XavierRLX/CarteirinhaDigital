@@ -24,14 +24,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // 1) sempre preenche a tela com o snapshot do login
+  // snapshot do momento do login
   preencherCarteirinha(userInfo);
   preencherModal(userInfo);
   window.currentUser = userInfo;
 
-  // 2) tenta buscar dados atualizados no backend (se tiver id)
+  // tenta buscar dados atualizados no backend (se tiver id)
   if (!userInfo.id) {
     console.warn('userInfo.id está vazio; usando apenas dados locais.');
+    aplicarRegrasDeExpiracao(userInfo);
     return;
   }
 
@@ -47,26 +48,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       preencherCarteirinha(userInfo);
       preencherModal(userInfo);
-      return;
-    }
-
-    // se o backend disser que não está mais ativo, aí sim derruba o acesso
-    if (resp.status === 403) {
+    } else if (resp.status === 403) {
       alert(body.error || 'Seu cadastro não está ativo.');
       window.location.href = '/login';
       return;
-    }
-
-    if (resp.status === 404) {
+    } else if (resp.status === 404) {
       console.warn('Usuário não encontrado no /api/me. Usando dados locais.');
-      // não derruba o usuário, só segue com o que veio do login
-      return;
+    } else if (!resp.ok) {
+      console.warn('Falha ao atualizar dados do /api/me:', body.error || resp.status);
     }
-
-    console.warn('Falha ao atualizar dados do /api/me:', body.error || resp.status);
   } catch (err) {
     console.warn('Erro ao chamar /api/me, usando dados locais:', err);
   }
+
+  // no final, aplica sempre a regra de expiração com a melhor info que tivermos
+  aplicarRegrasDeExpiracao(userInfo);
 });
 
 function preencherCarteirinha(user) {
@@ -83,6 +79,8 @@ function preencherCarteirinha(user) {
 
   if (validadeDate && validadeDate < today) {
     document.getElementById('validade').style.color = 'red';
+  } else {
+    document.getElementById('validade').style.color = '';
   }
 }
 
@@ -101,5 +99,55 @@ function preencherModal(user) {
 
   if (validadeDate && validadeDate < today) {
     document.getElementById('validadeModal').style.color = 'red';
+  } else {
+    document.getElementById('validadeModal').style.color = '';
   }
 }
+
+function aplicarRegrasDeExpiracao(user) {
+  const validadeDate = user.validade ? new Date(user.validade) : null;
+  const today = new Date();
+
+  // flag vinda da API OU cálculo local pela data
+  const isExpired =
+    user.isExpired === true ||
+    (validadeDate && validadeDate < today);
+
+  if (!isExpired) {
+    return;
+  }
+
+  // desabilita botão "Acessar Carteirinha"
+  const btnAcessar = document.getElementById('abrirCarteirinha');
+  if (btnAcessar) {
+    btnAcessar.style.opacity = '0.5';
+    btnAcessar.style.pointerEvents = 'none';
+  }
+
+  // mostra modal de carteirinha expirada, se existir no HTML
+  const modalExp = document.getElementById('modalExpirada');
+  if (modalExp) {
+    modalExp.style.display = 'flex';
+  }
+}
+
+// listeners específicos do modal de carteirinha expirada
+document.addEventListener('DOMContentLoaded', () => {
+  const modalExp = document.getElementById('modalExpirada');
+  const btnRenovar = document.getElementById('btnRenovarCarteirinha');
+  const btnFechar = document.getElementById('btnFecharExpirada');
+
+  if (btnRenovar) {
+    btnRenovar.addEventListener('click', () => {
+      window.location.href = '/renovacaoCarteirinha';
+    });
+  }
+
+  if (btnFechar) {
+    btnFechar.addEventListener('click', () => {
+      if (modalExp) {
+        modalExp.style.display = 'none';
+      }
+    });
+  }
+});

@@ -13,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 /* ------------------------------------------------------------------
-   1. Upload em memória (para fotos de usuário)
+   1. Upload em memória (para fotos de usuário / comprovante)
 ------------------------------------------------------------------- */
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -92,12 +92,11 @@ async function uploadUserImage(file) {
     throw new Error('Arquivo de foto inválido. Envie apenas imagens.');
   }
 
-  // extensão baseada no nome original
   const ext = (file.originalname.split('.').pop() || 'jpg').toLowerCase();
-  const filePath = `avatars/${randomUUID()}.${ext}`; // pasta + nome random
+  const filePath = `avatars/${randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabaseAdmin.storage
-    .from('avatars') // mesmo nome do bucket
+    .from('avatars')
     .upload(filePath, file.buffer, {
       contentType: file.mimetype,
     });
@@ -107,22 +106,143 @@ async function uploadUserImage(file) {
     throw new Error('Erro ao salvar foto no storage');
   }
 
-  const { data } = supabaseAdmin.storage
-    .from('avatars')
-    .getPublicUrl(filePath);
+  const { data } = supabaseAdmin.storage.from('avatars').getPublicUrl(filePath);
 
-  return data.publicUrl; // URL usada no <img src="...">
+  return data.publicUrl;
+}
+
+// Upload da imagem de comprovante de renovação
+async function uploadRenewalProof(file) {
+  if (!file) {
+    throw new Error('Comprovante é obrigatório');
+  }
+
+  if (!file.mimetype.startsWith('image/')) {
+    throw new Error('Envie uma imagem do comprovante (jpeg, png, etc).');
+  }
+
+  const ext = (file.originalname.split('.').pop() || 'jpg').toLowerCase();
+  const filePath = `proofs/${randomUUID()}.${ext}`;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('renewals')
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+    });
+
+  if (uploadError) {
+    console.error('Erro upload comprovante:', uploadError);
+    throw new Error('Erro ao salvar comprovante no storage');
+  }
+
+  const { data } = supabaseAdmin.storage.from('renewals').getPublicUrl(filePath);
+
+  return data.publicUrl;
+}
+
+// calcula a validade da carteirinha baseado no semestre atual
+function getNextSemesterValidity(now = new Date()) {
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1 - 12
+
+  // 1º semestre => até 31 de julho
+  if (month <= 6) {
+    return `${year}-07-31`;
+  }
+
+  // 2º semestre => até 31 de dezembro
+  return `${year}-12-31`;
+}
+
+// verifica se está expirada (true = expirada)
+function isCardExpired(validade) {
+  if (!validade) return true;
+  // assumindo formato YYYY-MM-DD vindo do Supabase (tipo date)
+  const todayStr = new Date().toISOString().slice(0, 10);
+  return validade < todayStr;
 }
 
 /* ------------------------------------------------------------------
-   5. Rotas de páginas (HTML)
+   5. Rotas de API - Renovação de carteirinha
+------------------------------------------------------------------- */
+
+// Pedido de renovação da carteirinha
+app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
+  try {
+    const { userId, mensagem } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId é obrigatório' });
+    }
+
+    // Confirma que o usuário existe
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      console.error('Erro ao buscar usuário na renovação:', userError);
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    // (Opcional) impedir múltiplos pendentes
+    const { data: existing, error: existingError } = await supabaseAdmin
+      .from('card_renewals')
+      .select('id, status')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (existingError) {
+      console.error('Erro ao verificar renovações pendentes:', existingError);
+    }
+
+    if (existing) {
+      return res.status(400).json({
+        error: 'Já existe um pedido de renovação pendente para este usuário.',
+      });
+    }
+
+    const proofUrl = await uploadRenewalProof(req.file);
+
+    const { data: renewal, error } = await supabaseAdmin
+      .from('card_renewals')
+      .insert({
+        user_id: userId,
+        proof_url: proofUrl,
+        // se quiser salvar mensagem:
+        // mensagem: mensagem || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao criar pedido de renovação:', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.status(201).json({
+      message: 'Pedido de renovação enviado com sucesso. Aguarde aprovação do administrador.',
+      renewalId: renewal.id,
+    });
+  } catch (err) {
+    console.error('Erro /api/renewals:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+/* ------------------------------------------------------------------
+   6. Rotas de páginas (HTML)
 ------------------------------------------------------------------- */
 const routes = [
   { path: '/', file: 'index.html' },
   { path: '/login', file: 'login.html' },
   { path: '/carteirinhaDigital', file: 'carteirinhaDigital.html' },
-  { path: '/cadastroUsu', file: 'cadastroUsu.html' },          // admin
-  { path: '/cadastroPublico', file: 'cadastroPublico.html' },  // público
+  { path: '/cadastroUsu', file: 'cadastroUsu.html' },
+  { path: '/cadastroPublico', file: 'cadastroPublico.html' },
+  { path: '/renovacaoCarteirinha', file: 'renovacaoCarteirinha.html' },
 ];
 
 routes.forEach((route) => {
@@ -132,7 +252,7 @@ routes.forEach((route) => {
 });
 
 /* ------------------------------------------------------------------
-   6. Rotas de API - Autenticação e Usuário logado
+   7. Rotas de API - Autenticação e Usuário logado
 ------------------------------------------------------------------- */
 
 /**
@@ -216,7 +336,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// GET /api/me/:id  -> busca dados atualizados do usuário logado
+// GET /api/me/:id  -> dados atualizados do usuário logado + flag de expiração
 app.get('/api/me/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -228,7 +348,6 @@ app.get('/api/me/:id', async (req, res) => {
       .single();
 
     if (error && error.code === 'PGRST116') {
-      // not found
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
@@ -250,6 +369,8 @@ app.get('/api/me/:id', async (req, res) => {
     }
 
     const safeUser = mapUserToSafeUser(user);
+    safeUser.isExpired = isCardExpired(user.validade);
+
     return res.json({ user: safeUser });
   } catch (err) {
     console.error('Erro /api/me/:id:', err);
@@ -258,7 +379,7 @@ app.get('/api/me/:id', async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   7. Rotas de API - Admin (CRUD de usuários)
+   8. Rotas de API - Admin (CRUD de usuários)
 ------------------------------------------------------------------- */
 
 /**
@@ -299,6 +420,7 @@ app.post(
       }
 
       const password_hash = await bcrypt.hash(password, 10);
+      const validadeCart = validade || getNextSemesterValidity();
 
       const { data, error } = await supabaseAdmin
         .from('users')
@@ -313,7 +435,7 @@ app.post(
           cpf,
           numero_tel: numeroTel,
           data_nascimento: dataNascimento,
-          validade,
+          validade: validadeCart,
           foto_url: fotoUrl,
           status: status || 'active',
         })
@@ -333,10 +455,7 @@ app.post(
   }
 );
 
-/**
- * GET /api/admin/users
- * Lista todos os usuários (tela de admin)
- */
+// GET /api/admin/users – lista todos os usuários (tela de admin)
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -480,10 +599,10 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   8. Cadastro público (/api/public/register)
+   9. Cadastro público (/api/public/register)
 ------------------------------------------------------------------- */
 
-// Cadastro público de usuário - status começa como 'inactive'
+// Cadastro público de usuário - status = active e validade automática por semestre
 app.post('/api/public/register', upload.single('foto'), async (req, res) => {
   try {
     const {
@@ -497,7 +616,6 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
       cpf,
       numeroTel,
       dataNascimento,
-      validade,
     } = req.body;
 
     if (!email || !password || !nome || !nomePerfil) {
@@ -531,6 +649,7 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
     }
 
     const password_hash = await bcrypt.hash(password, 10);
+    const validadeCart = getNextSemesterValidity();
 
     const { data, error } = await supabaseAdmin
       .from('users')
@@ -545,9 +664,9 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
         cpf,
         numero_tel: numeroTel,
         data_nascimento: dataNascimento,
-        validade,
+        validade: validadeCart,
         foto_url: fotoUrl,
-        status: 'inactive', // começa inativo
+        status: 'active',
       })
       .select()
       .single();
@@ -558,7 +677,7 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
     }
 
     return res.status(201).json({
-      message: 'Cadastro realizado. Aguarde ativação pelo administrador.',
+      message: 'Cadastro realizado com sucesso. Você já pode fazer login.',
       userId: data.id,
     });
   } catch (err) {
@@ -568,7 +687,7 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   9. Rota para salvar localização (legado)
+   10. Rota para salvar localização (legado)
 ------------------------------------------------------------------- */
 app.post('/saveLocation', (req, res) => {
   const { latitude, longitude } = req.body;
@@ -578,12 +697,12 @@ app.post('/saveLocation', (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   10. Rotas de email
+   11. Rotas de email
 ------------------------------------------------------------------- */
 app.use('/email', emailRoutes);
 
 /* ------------------------------------------------------------------
-   11. Inicializando o servidor
+   12. Inicializando o servidor
 ------------------------------------------------------------------- */
 app.listen(port, () => {
   console.log(`✅ Server is running on http://localhost:${port}`);
