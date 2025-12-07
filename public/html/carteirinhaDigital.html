@@ -80,11 +80,11 @@
       <!-- ÁREA DE PERFIL / OPÇÕES -->
       <section class="btnsPerfilConteiner">
         <h2>Meu perfil</h2>
-        <div class="conteinerBtnsPerfil">
-          <div class="btnsPerfil">
-            <i data-lucide="user-2"></i>
-            <p>Meus dados</p>
-          </div>
+         <div class="conteinerBtnsPerfil">
+    <div class="btnsPerfil" id="btnMeusDados">
+      <i data-lucide="user-2"></i>
+      <p>Meus dados</p>
+    </div>
           <div class="btnsPerfil">
             <i data-lucide="shield"></i>
             <p>Privacidade</p>
@@ -216,6 +216,66 @@
       </div>
     </div>
   </div>
+
+  <div id="modalMeusDados" class="modal">
+  <div class="modal-content modal-perfil">
+    <span id="closeModalMeusDados" class="close">X</span>
+
+    <section class="modalPerfilConteudo">
+      <h2>Meus dados</h2>
+      <p class="corC">
+        Atualize as informações básicas da sua carteirinha.
+      </p>
+
+      <form id="formMeusDados" class="formMeusDados">
+        <label>
+          <span>Nome completo</span>
+          <input
+            type="text"
+            name="nomeCompleto"
+            required
+            placeholder="Ex: Renan Xavier"
+          />
+        </label>
+
+        <label>
+          <span>Nome de perfil</span>
+          <input
+            type="text"
+            name="nomePerfil"
+            required
+            placeholder="Ex: Renan Xavier"
+          />
+        </label>
+
+        <label>
+          <span>Curso</span>
+          <input
+            type="text"
+            name="curso"
+            required
+            placeholder="Ex: Análise e desenvolvimento de sistemas"
+          />
+        </label>
+
+        <label>
+          <span>Campus</span>
+          <input
+            type="text"
+            name="campus"
+            required
+            placeholder="Ex: Méier - RJ"
+          />
+        </label>
+
+        <button type="submit" class="btnSalvarDados">
+          Salvar alterações
+        </button>
+      </form>
+    </section>
+  </div>
+</div>
+
 
   <!-- MODAL AVISO (tela cheia) -->
   <div id="aviso" class="modal modal-aviso">

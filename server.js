@@ -28,6 +28,8 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Arquivos estáticos (CSS e JS do front)
 app.use('/style', express.static(path.join(__dirname, 'public', 'style')));
 app.use('/javaScript', express.static(path.join(__dirname, 'public', 'javaScript')));
@@ -330,7 +332,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// GET /api/me/:id
+// GET /api/me/:id  (já existe, deixa igual)
 app.get('/api/me/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -371,6 +373,49 @@ app.get('/api/me/:id', async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
+
+
+// NOVO: PUT /api/me/update-profile  -> atualizar dados básicos do próprio usuário
+app.put('/api/me/update-profile', async (req, res) => {
+  try {
+    const { id, nome, nomePerfil, curso, campus } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: 'id do usuário é obrigatório.' });
+    }
+
+    const updatePayload = {};
+    if (nome !== undefined) updatePayload.nome = nome;
+    if (nomePerfil !== undefined) updatePayload.nome_perfil = nomePerfil;
+    if (curso !== undefined) updatePayload.curso = curso;
+    if (campus !== undefined) updatePayload.campus = campus;
+
+    if (Object.keys(updatePayload).length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo para atualizar.' });
+    }
+
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .update(updatePayload)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Erro Supabase (/api/me/update-profile):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    const safeUser = mapUserToSafeUser(user);
+    safeUser.isExpired = isCardExpired(user.validade);
+
+    return res.json({ user: safeUser });
+  } catch (err) {
+    console.error('Erro /api/me/update-profile:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
 
 /* ------------------------------------------------------------------
    8. Rotas de API - Admin (CRUD de usuários)

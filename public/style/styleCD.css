@@ -482,6 +482,61 @@ footer {
 
 /* ---------------- Botões genéricos ---------------- */
 
+.modal-perfil {
+  max-width: 420px;
+  width: 90%;
+}
+
+.modalPerfilConteudo h2 {
+  margin-bottom: 4px;
+}
+
+.formMeusDados {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formMeusDados label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.formMeusDados label span {
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.formMeusDados input {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.formMeusDados input:focus {
+  border-color: #2563eb;
+}
+
+.btnSalvarDados {
+  margin-top: 6px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: #f9fafb;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.btnSalvarDados:hover {
+  filter: brightness(1.05);
+}
+
 .btn {
   cursor: pointer;
   border-radius: 999px;
