@@ -2,7 +2,7 @@
   "name": "Carteirinha Digital UPA",
   "short_name": "UPA Carteirinha",
   "start_url": "/carteirinhaDigital",
-  "scope": "/login",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#021326",
