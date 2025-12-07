@@ -1,10 +1,13 @@
 {
-  "name": "carteirinhadigital",
+  "name": "upa-carteirinha",
   "version": "1.0.0",
-  "description": "Sistema de login de usuários com Supabase",
+  "description": "Sistema de Carteirinha Digital UPA",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.0",
