@@ -242,6 +242,23 @@
     }
 
     /* Carousel box */
+
+    /* NOVO estilo do carrossel de fotos */
+        .upa-carousel-photo {
+        width: 140px;
+        height: 140px;
+        object-fit: contain;
+        border: 3px solid rgba(15, 23, 42, 0.18);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
+        margin-bottom: 0.5rem;
+        }
+
+.upa-carousel-caption {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0;
+}
+
     .upa-carousel-card {
       background: #f9fafb;
       border-radius: 1.25rem;
@@ -322,6 +339,21 @@
       background-color: #020617;
     }
 
+    /* Foto ampliada no modal */
+.upa-modal-photo {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 18px;
+  object-fit: contain;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+}
+
+/* Cursor de zoom nas fotos do carrossel (só visual) */
+.upa-carousel-photo {
+  cursor: zoom-in;
+}
+
+
     /* Features */
     .upa-features {
       margin-top: 1.15rem;
@@ -379,6 +411,28 @@
     }
   </style>
 </head>
+
+<!-- Modal de foto ampliada -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark text-light border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Pré-visualização</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
+      </div>
+      <div class="modal-body d-flex flex-column align-items-center">
+        <img id="photoModalImg" src="" alt="" class="upa-modal-photo mb-2" />
+        <p id="photoModalCaption" class="small text-muted text-center mb-0"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <body>
   <div class="upa-shell">
     <div class="upa-shell-inner">
@@ -401,14 +455,14 @@
         <!-- Hero -->
         <section class="upa-hero">
           <div class="upa-tagline-pill">
-            <span>Nova!</span> Carteirinha digital fictícia para brincar de faculdade
+            <span>Nova!</span> Carteirinha digital fictícia.
           </div>
 
           <h2>
             Imagine ver como seria estudar na faculdade dos seus sonhos…
           </h2>
           <p>
-            Monte uma carteirinha digital completa, com curso, campus, foto e matrícula.
+            Monte uma carteirinha digital totalmente de graça completa, com curso, campus, foto e matrícula.
             Use como portfólio divertido, simulação de layout ou para brincar com os amigos.
           </p>
           <p>
@@ -421,7 +475,7 @@
         <!-- Ações -->
         <section class="upa-actions">
           <a href="/cadastroPublico" class="btn btn-upa-primary w-100">
-            Criar minha carteirinha agora
+            Criar minha carteirinha agora de GRAÇA
           </a>
           <a href="/login" class="btn btn-upa-ghost w-100">
             Já tenho carteirinha
@@ -446,8 +500,7 @@
             <li>
               <span class="upa-how-dot"></span>
               <span>
-                Quando expirar, você pode enviar um comprovante fake de renovação
-                e simular todo o fluxo administrativo.
+                Quando expirar, é só pedir para renovar a carteirinha.
               </span>
             </li>
           </ul>
@@ -455,145 +508,76 @@
 
         <!-- Carrossel de perfis -->
         <section class="upa-carousel-card mb-3">
-          <h3 class="upa-carousel-title">Veja na prática</h3>
-          <p class="upa-carousel-sub">
-            Perfis sérios e perfis para dar risada — tudo usando o mesmo modelo
-            de carteirinha.
-          </p>
+  <h3 class="upa-carousel-title">Veja na prática</h3>
+  <p class="upa-carousel-sub">
+    Perfis sérios e perfis para dar risada — tudo usando o mesmo modelo de carteirinha.
+  </p>
 
-          <div id="profilesCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-indicators">
-              <button
-                type="button"
-                data-bs-target="#profilesCarousel"
-                data-bs-slide-to="0"
-                class="active"
-                aria-current="true"
-                aria-label="Slide 1"
-              ></button>
-              <button
-                type="button"
-                data-bs-target="#profilesCarousel"
-                data-bs-slide-to="1"
-                aria-label="Slide 2"
-              ></button>
-              <button
-                type="button"
-                data-bs-target="#profilesCarousel"
-                data-bs-slide-to="2"
-                aria-label="Slide 3"
-              ></button>
-              <button
-                type="button"
-                data-bs-target="#profilesCarousel"
-                data-bs-slide-to="3"
-                aria-label="Slide 4"
-              ></button>
-            </div>
+  <div id="profilesCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner text-center">
 
-            <div class="carousel-inner">
-              <!-- Renata - perfil sério 1 -->
-              <div class="carousel-item active">
-                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
-                  <img
-                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_renata_portela_02.png"
-                    alt="Exemplo de perfil sério da estudante Renata"
-                    class="upa-carousel-avatar"
-                  />
-                  <div>
-                    <div class="upa-carousel-role">Perfil acadêmico</div>
-                    <div class="upa-carousel-name">Renata Portela</div>
-                    <div class="upa-carousel-badge badge-serio">Modo sério</div>
-                    <p class="upa-carousel-text">
-                      Curso tradicional, foto formal e dados completos. Perfeito para
-                      simular como ficaria sua carteirinha em uma universidade real.
-                    </p>
-                  </div>
-                </div>
-              </div>
+      <!-- Renata - perfil sério 1 -->
+      <div class="carousel-item active">
+        <img
+          src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_renata_portela_02.png"
+          alt="Exemplo de perfil sério da estudante Renata"
+          class="upa-carousel-photo"
+        />
+        <p class="upa-carousel-caption">Renata • Perfil</p>
+      </div>
 
-              <!-- Renata - perfil sério 2 -->
-              <div class="carousel-item">
-                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
-                  <img
-                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_renata_portela_01.png"
-                    alt="Segundo exemplo de perfil sério da estudante Renata"
-                    class="upa-carousel-avatar"
-                  />
-                  <div>
-                    <div class="upa-carousel-role">Portfolio & currículo</div>
-                    <div class="upa-carousel-name">Renata Portela</div>
-                    <div class="upa-carousel-badge badge-serio">Apresentação profissional</div>
-                    <p class="upa-carousel-text">
-                      Use a carteirinha digital como elemento visual em portfólios,
-                      mockups ou trabalhos acadêmicos de UI/UX.
-                    </p>
-                  </div>
-                </div>
-              </div>
+      <!-- Renata - perfil sério 2 -->
+      <div class="carousel-item">
+        <img
+          src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_renata_portela_01.png"
+          alt="Segundo exemplo de perfil sério da estudante Renata"
+          class="upa-carousel-photo"
+        />
+        <p class="upa-carousel-caption">Renata • Perfil</p>
+      </div>
 
-              <!-- Lucas - perfil zoeira 1 -->
-              <div class="carousel-item">
-                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
-                  <img
-                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_lucas.jpg"
-                    alt="Perfil divertido de Lucas, estudante fictício"
-                    class="upa-carousel-avatar"
-                  />
-                  <div>
-                    <div class="upa-carousel-role">Modo zoeira</div>
-                    <div class="upa-carousel-name">Lucas “Testes de Qualidade”</div>
-                    <div class="upa-carousel-badge badge-zoeira">Engenharia de Bebidas</div>
-                    <p class="upa-carousel-text">
-                      Crie cursos fictícios como Engenharia de Bebidas, Memes Aplicados
-                      ou Ciência da Procrastinação e engane seus amigos no grupo.
-                    </p>
-                  </div>
-                </div>
-              </div>
+      <!-- Lucas - zoeira 1 -->
+      <div class="carousel-item">
+        <img
+          src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_lucas.jpg"
+          alt="Perfil divertido de Lucas, estudante fictício"
+          class="upa-carousel-photo"
+        />
+        <p class="upa-carousel-caption">Lucas • Engenharia da Malandragem</p>
+      </div>
 
-              <!-- Lucas - perfil zoeira 2 -->
-              <div class="carousel-item">
-                <div class="d-flex align-items-center gap-3 flex-sm-row flex-column">
-                  <img
-                    src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_lucas_02.jpg"
-                    alt="Segundo perfil divertido de Lucas, estudante fictício"
-                    class="upa-carousel-avatar"
-                  />
-                  <div>
-                    <div class="upa-carousel-role">Diversão garantida</div>
-                    <div class="upa-carousel-name">Lucas – Intercâmbio em Hogwarts</div>
-                    <div class="upa-carousel-badge badge-zoeira">Magia & Dados</div>
-                    <p class="upa-carousel-text">
-                      Brinque com combinações impossíveis de cursos, faculdades e
-                      semestres. A carteirinha é fake, mas as risadas são reais.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <!-- Lucas - zoeira 2 -->
+      <div class="carousel-item">
+        <img
+          src="https://sltwilhjbnorzicakhyl.supabase.co/storage/v1/object/public/imgs/perfil_lucas_02.jpg"
+          alt="Segundo perfil divertido de Lucas"
+          class="upa-carousel-photo"
+        />
+        <p class="upa-carousel-caption">Lucas • Modo zoeira</p>
+      </div>
+    </div>
 
-            <!-- Controles -->
-            <button
-              class="carousel-control-prev"
-              type="button"
-              data-bs-target="#profilesCarousel"
-              data-bs-slide="prev"
-            >
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Anterior</span>
-            </button>
-            <button
-              class="carousel-control-next"
-              type="button"
-              data-bs-target="#profilesCarousel"
-              data-bs-slide="next"
-            >
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Próximo</span>
-            </button>
-          </div>
-        </section>
+    <!-- Controles laterais -->
+    <button
+      class="carousel-control-prev"
+      type="button"
+      data-bs-target="#profilesCarousel"
+      data-bs-slide="prev"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      type="button"
+      data-bs-target="#profilesCarousel"
+      data-bs-slide="next"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Próximo</span>
+    </button>
+  </div>
+</section>
 
         <!-- Features / destaques -->
         <section class="upa-features">
@@ -643,7 +627,7 @@
             UPA • Universidade Pedro de Alcântara – Sistema de Carteirinha Digital.
           </p>
           <p class="mb-1">
-            Renovação simbólica a cada semestre ajuda a manter este projeto online.
+            Renovação a cada semestre.
           </p>
           <p class="mb-0">
             Dúvidas ou suporte:
@@ -667,5 +651,27 @@
       }
     });
   </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalElement = document.getElementById('photoModal');
+    if (!modalElement) return;
+
+    const modalImg = document.getElementById('photoModalImg');
+    const modalCaption = document.getElementById('photoModalCaption');
+    const modalInstance = new bootstrap.Modal(modalElement);
+
+    // pega todas as fotos do carrossel
+    document.querySelectorAll('.upa-carousel-photo').forEach((img) => {
+      img.addEventListener('click', () => {
+        modalImg.src = img.src;
+        modalImg.alt = img.alt || '';
+        modalCaption.textContent = img.alt || '';
+        modalInstance.show();
+      });
+    });
+  });
+</script>
+
 </body>
 </html>
