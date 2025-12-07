@@ -14,6 +14,7 @@ const port = process.env.PORT || 3000;
 
 /* ------------------------------------------------------------------
    1. Upload em memória (para fotos de usuário / comprovante)
+   - Limite de 5MB: ok, porque o front já comprime a imagem
 ------------------------------------------------------------------- */
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -28,9 +29,8 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Arquivos estáticos (CSS e JS do front)
 app.use('/style', express.static(path.join(__dirname, 'public', 'style')));
 app.use('/javaScript', express.static(path.join(__dirname, 'public', 'javaScript')));
 
@@ -213,7 +213,7 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       .insert({
         user_id: userId,
         proof_url: proofUrl,
-        mensagem: mensagem || null, 
+        mensagem: mensagem || null,
       })
       .select()
       .single();
@@ -332,7 +332,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// GET /api/me/:id  (já existe, deixa igual)
+// GET /api/me/:id
 app.get('/api/me/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -374,15 +374,12 @@ app.get('/api/me/:id', async (req, res) => {
   }
 });
 
-
-// NOVO: PUT /api/me/update-profile  -> atualizar dados básicos do próprio usuário
-app.put('/api/me/update-profile', async (req, res) => {
+// PUT /api/me/:id -> atualizar dados básicos do próprio usuário
+// (alinhado com o fetch do dadosUser.js)
+app.put('/api/me/:id', async (req, res) => {
   try {
-    const { id, nome, nomePerfil, curso, campus } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ error: 'id do usuário é obrigatório.' });
-    }
+    const { id } = req.params;
+    const { nome, nomePerfil, curso, campus } = req.body;
 
     const updatePayload = {};
     if (nome !== undefined) updatePayload.nome = nome;
@@ -402,7 +399,7 @@ app.put('/api/me/update-profile', async (req, res) => {
       .single();
 
     if (error) {
-      console.error('Erro Supabase (/api/me/update-profile):', error);
+      console.error('Erro Supabase (/api/me PUT):', error);
       return res.status(400).json({ error: error.message });
     }
 
@@ -411,11 +408,10 @@ app.put('/api/me/update-profile', async (req, res) => {
 
     return res.json({ user: safeUser });
   } catch (err) {
-    console.error('Erro /api/me/update-profile:', err);
+    console.error('Erro /api/me/:id (PUT):', err);
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
-
 
 /* ------------------------------------------------------------------
    8. Rotas de API - Admin (CRUD de usuários)
@@ -603,7 +599,7 @@ app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
 
     return res.json(data);
   } catch (err) {
-    console.error('Erro /api/admin/users/:id/status (PATCH):', err);
+    console.error('Erro Supabase (/api/admin/users/:id/status):', err);
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
@@ -840,7 +836,36 @@ app.post('/saveLocation', (req, res) => {
 app.use('/email', emailRoutes);
 
 /* ------------------------------------------------------------------
-   12. Inicializando o servidor
+   12. Middleware de erro global (INCLUI erros do Multer)
+   -> TEM que vir DEPOIS das rotas que usam upload.single(...)
+------------------------------------------------------------------- */
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    console.error('Erro de upload (Multer):', err);
+
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        error: 'A imagem enviada é muito grande. Tamanho máximo permitido é de 5MB.',
+        code: 'FILE_TOO_LARGE',
+      });
+    }
+
+    return res.status(400).json({
+      error: 'Erro ao processar o upload do arquivo.',
+      code: 'MULTER_ERROR',
+      details: err.message,
+    });
+  }
+
+  console.error('Erro inesperado:', err);
+  return res.status(500).json({
+    error: 'Erro interno no servidor.',
+    code: 'INTERNAL_SERVER_ERROR',
+  });
+});
+
+/* ------------------------------------------------------------------
+   13. Inicializando o servidor
 ------------------------------------------------------------------- */
 app.listen(port, () => {
   console.log(`✅ Server is running on http://localhost:${port}`);
