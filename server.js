@@ -142,6 +142,28 @@ async function uploadRenewalProof(file) {
   return data.publicUrl;
 }
 
+//verifiacao de renovação admin:
+
+function getCurrentSemesterRange(now = new Date()) {
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  // 1º semestre: 01/01 até 31/07
+  if (month <= 6) {
+    return {
+      startISO: new Date(`${year}-01-01T00:00:00.000Z`).toISOString(),
+      endISO: new Date(`${year}-07-31T23:59:59.999Z`).toISOString(),
+    };
+  }
+
+  // 2º semestre: 01/08 até 31/12
+  return {
+    startISO: new Date(`${year}-08-01T00:00:00.000Z`).toISOString(),
+    endISO: new Date(`${year}-12-31T23:59:59.999Z`).toISOString(),
+  };
+}
+
+
 // calcula a validade da carteirinha baseado no semestre atual
 function getNextSemesterValidity(now = new Date()) {
   const year = now.getFullYear();
@@ -179,7 +201,7 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
     // Confirma que o usuário existe
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
-      .select('id')
+      .select('id, validade')
       .eq('id', userId)
       .single();
 
@@ -196,6 +218,12 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       .eq('status', 'pending')
       .maybeSingle();
 
+      if (!isCardExpired(user.validade)) {
+      return res.status(400).json({
+      error: 'Sua carteirinha ainda está válida. Renovação só é permitida após expirar.',
+     });
+    }
+
     if (existingError) {
       console.error('Erro ao verificar renovações pendentes:', existingError);
     }
@@ -204,6 +232,7 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       return res.status(400).json({
         error: 'Já existe um pedido de renovação pendente para este usuário.',
       });
+      
     }
 
     const proofUrl = await uploadRenewalProof(req.file);
@@ -678,6 +707,67 @@ app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
+
+app.get('/api/admin/renewals/pending', requireAdmin, async (req, res) => {
+  try {
+    const { startISO, endISO } = getCurrentSemesterRange(new Date());
+
+    // pega pendentes do período atual e já traz dados do usuário
+    const { data, error } = await supabaseAdmin
+      .from('card_renewals')
+      .select(`
+        id,
+        user_id,
+        proof_url,
+        mensagem,
+        status,
+        created_at,
+        users (
+          id,
+          email,
+          nome,
+          nome_perfil,
+          validade
+        )
+      `)
+      .eq('status', 'pending')
+      .gte('created_at', startISO)
+      .lte('created_at', endISO)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro Supabase (pending renewals):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    // só alerta se o usuário estiver expirado
+    const expiredPending = (data || []).filter((r) =>
+      isCardExpired(r?.users?.validade)
+    );
+
+    return res.json({
+      pendingCount: expiredPending.length,
+      items: expiredPending.map((r) => ({
+        id: r.id,
+        createdAt: r.created_at,
+        proofUrl: r.proof_url,
+        mensagem: r.mensagem,
+        user: {
+          id: r.users.id,
+          email: r.users.email,
+          nome: r.users.nome,
+          nomePerfil: r.users.nome_perfil,
+          validade: r.users.validade,
+          isExpired: true,
+        },
+      })),
+    });
+  } catch (err) {
+    console.error('Erro /api/admin/renewals/pending:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
 
 app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
   try {

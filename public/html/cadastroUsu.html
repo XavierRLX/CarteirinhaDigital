@@ -10,6 +10,8 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 </head>
 <body class="bg-light">
   <div class="container-fluid py-4">
@@ -131,10 +133,25 @@
       <div class="col-12 col-lg-8">
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-              <h2 class="h5 mb-0">Lista de Usuários</h2>
-              <span class="badge bg-secondary" id="userCountBadge"></span>
-            </div>
+           <div class="d-flex align-items-center gap-2">
+  <span class="badge bg-secondary" id="userCountBadge"></span>
+
+  <button
+    id="renewalsBell"
+    class="btn btn-outline-secondary btn-sm position-relative"
+    type="button"
+    title="Pedidos de renovação pendentes"
+  >
+    <i class="bi bi-bell"></i>
+    <span
+      id="renewalsBadge"
+      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+    >
+      0
+    </span>
+  </button>
+</div>
+
 
             <!-- Busca + Filtros -->
             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
@@ -225,5 +242,34 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/javaScript/ui.js"></script>
   <script src="javaScript/adminUsers.js"></script>
+
+   <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const badge = document.getElementById('renewalsBadge');
+
+    async function refreshRenewalsBadge() {
+      try {
+        const adminPassword = localStorage.getItem('adminPassword');
+
+        const res = await fetch('/api/admin/renewals/pending', {
+          headers: { 'x-admin-password': adminPassword || '' }
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return;
+
+        const count = Number(data.pendingCount || 0);
+        badge.textContent = String(count);
+        badge.classList.toggle('d-none', count === 0);
+      } catch (e) {
+        // silêncio no polling
+      }
+    }
+
+    refreshRenewalsBadge();
+    setInterval(refreshRenewalsBadge, 20000);
+  });
+</script>
+
 </body>
 </html>

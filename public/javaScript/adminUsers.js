@@ -1,7 +1,9 @@
 // public/javaScript/adminUsers.js
 
 // ⚠️ Precisa bater com ADMIN_PANEL_PASSWORD / variável de ambiente do backend
-const ADMIN_PASSWORD = 'RumoaoDima24@';
+const ADMIN_STORAGE_KEY = 'adminPassword';
+let ADMIN_PASSWORD = '';
+
 
 let usersCache = [];
 let editingUserId = null;
@@ -542,3 +544,5 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('searchInput').addEventListener('input', renderUserTable);
   document.getElementById('statusFilter').addEventListener('change', renderUserTable);
 });
+
+
