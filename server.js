@@ -263,6 +263,56 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
   }
 });
 
+// Renovar automaticamente a validade do usuário (admin)
+app.post('/api/admin/users/:id/renew', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // define a nova validade (fim do semestre atual)
+    const validade = getNextSemesterValidity(new Date());
+
+    // atualiza o usuário
+    const { data: updatedUser, error: userError } = await supabaseAdmin
+      .from('users')
+      .update({
+        validade,
+        status: 'active',
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('Erro Supabase (auto renew user):', userError);
+      return res.status(400).json({ error: userError.message });
+    }
+
+    // (opcional, mas RECOMENDADO)
+    // se existir pedido pendente desse usuário, marca como aprovado
+    // -> isso faz o sininho diminuir e não ficar “preso” em pendências antigas
+    const { error: renewalsError } = await supabaseAdmin
+      .from('card_renewals')
+      .update({ status: 'approved' })
+      .eq('user_id', id)
+      .eq('status', 'pending');
+
+    if (renewalsError) {
+      console.error('Erro Supabase (auto approve pending renewals):', renewalsError);
+      // não bloqueia a renovação do usuário
+    }
+
+    return res.json({
+      message: 'Usuário renovado automaticamente com sucesso.',
+      user: updatedUser,
+      validade,
+    });
+  } catch (err) {
+    console.error('Erro /api/admin/users/:id/renew:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
 /* ------------------------------------------------------------------
    6. Rotas de páginas (HTML)
 ------------------------------------------------------------------- */

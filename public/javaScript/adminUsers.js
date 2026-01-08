@@ -336,7 +336,10 @@ function renderUserTable() {
     else if (user.status === 'inactive') statusClass = 'secondary';
 
     const statusBadge = `<span class="badge bg-${statusClass}">${escapeHtml(user.status || '')}</span>`;
-    const expiredBadge = user._isExpired ? '<span class="badge bg-danger ms-1">expirada</span>' : '';
+    const expiredBadge = user._isExpired
+  ? '<span class="badge bg-danger ms-1">expirada</span>'
+  : '';
+
 
     const createdAt = formatDateBR(user.created_at);
 
@@ -355,11 +358,18 @@ function renderUserTable() {
       <td>
         <div class="btn-group btn-group-sm" role="group">
           <button type="button" class="btn btn-outline-primary" onclick="editUser('${user.id}')">Editar</button>
+
+          ${user._isExpired
+            ? `<button type="button" class="btn btn-outline-warning" onclick="renewUser('${user.id}')">Renovar</button>`
+            : ''
+          }
+
           <button type="button" class="btn btn-outline-success" onclick="changeStatus('${user.id}', 'active')">Ativar</button>
           <button type="button" class="btn btn-outline-warning" onclick="changeStatus('${user.id}', 'inactive')">Inativar</button>
           <button type="button" class="btn btn-outline-danger" onclick="deleteUser('${user.id}')">Excluir</button>
         </div>
       </td>
+
     `;
 
     tbody.appendChild(tr);
@@ -527,6 +537,8 @@ window.deleteUser = async function (id) {
   }
 };
 
+
+
 /* -------------------------------------------------------------
    Renovações por usuário (modal)
 ------------------------------------------------------------- */
@@ -637,6 +649,49 @@ function renderRenewalsTable(renewals) {
 /* -------------------------------------------------------------
    Aprovar / Rejeitar (reusa endpoints do backend)
 ------------------------------------------------------------- */
+
+window.renewUser = async function (userId) {
+  if (!confirm('Renovar automaticamente este usuário? A validade será atualizada para o fim do semestre e o status ficará ATIVO.')) {
+    return;
+  }
+
+  try {
+    const res = await adminFetch(`/api/admin/users/${userId}/renew`, {
+      method: 'POST',
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      showAlert(data.error || 'Erro ao renovar usuário.', 'error');
+      return;
+    }
+
+    showAlert(`Renovado! Nova validade: ${data.validade || ''}`, 'success');
+
+    // atualiza a lista + sininho
+    await loadUsers();
+    await refreshRenewalsBadge();
+
+    // se tiver modal de pendências aberto, recarrega (caso você esteja usando)
+    if (typeof openPendingRenewalsModal === 'function') {
+      const modalEl = document.getElementById('pendingRenewalsModal');
+      if (modalEl?.classList.contains('show')) {
+        await openPendingRenewalsModal();
+      }
+    }
+
+    // se tiver o modal do usuário aberto, recarrega também
+    if (currentRenewalsUserId === userId) {
+      await viewRenewals(userId);
+    }
+  } catch (err) {
+    if (err?.message === 'ADMIN_UNAUTHORIZED') return;
+    console.error('Erro ao renovar usuário:', err);
+    showAlert('Erro ao renovar usuário.', 'error');
+  }
+};
+
 window.approveRenewal = async function (renewalId) {
   if (!confirm('Aprovar esta renovação? A validade será ajustada para o próximo semestre e o usuário ficará ativo.')) {
     return;
