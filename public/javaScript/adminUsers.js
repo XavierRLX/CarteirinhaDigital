@@ -12,6 +12,19 @@ let editingUserId = null;
 let currentRenewalsUserId = null;
 let renewalsModalInstance = null;
 
+function getSavedAdminPassword() {
+  return localStorage.getItem(ADMIN_STORAGE_KEY) || '';
+}
+
+function saveAdminPassword(password) {
+  localStorage.setItem(ADMIN_STORAGE_KEY, password);
+}
+
+function clearAdminPassword() {
+  localStorage.removeItem(ADMIN_STORAGE_KEY);
+}
+
+
 /* -------------------------------------------------------------
    Helpers
 ------------------------------------------------------------- */
@@ -42,14 +55,28 @@ function truncate(str, max = 80) {
 
 // prompt simples de autenticação do painel
 function solicitarSenhaAdmin() {
+  // 1) tenta usar senha salva
+  const saved = getSavedAdminPassword();
+  if (saved) {
+    ADMIN_PASSWORD = saved;
+    return true;
+  }
+
+  // 2) se não tiver, pede
   const inputPassword = prompt('Por favor, insira a senha de administrador:');
-  if (inputPassword !== ADMIN_PASSWORD) {
-    showAlert('Senha de administrador incorreta!', 'error');
+  if (!inputPassword) {
+    showAlert('Acesso cancelado.', 'warning');
     window.location.href = '/login';
     return false;
   }
+
+  // 3) salva e usa
+  ADMIN_PASSWORD = inputPassword;
+  saveAdminPassword(inputPassword);
+
   return true;
 }
+
 
 /* -------------------------------------------------------------
    Carregar e renderizar usuários
@@ -68,12 +95,18 @@ async function loadUsers() {
   `;
 
   try {
-    const response = await fetch('/api/admin/users', {
-      method: 'GET',
-      headers: {
-        'x-admin-password': ADMIN_PASSWORD,
-      },
-    });
+   const response = await fetch('/api/admin/users', {
+  method: 'GET',
+  headers: { 'x-admin-password': ADMIN_PASSWORD },
+});
+
+if (response.status === 401) {
+  clearAdminPassword();
+  showAlert('Senha de admin inválida. Digite novamente.', 'warning');
+  window.location.reload();
+  return;
+}
+
 
     const data = await response.json();
 

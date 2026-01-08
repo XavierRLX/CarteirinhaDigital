@@ -4,191 +4,96 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cadastro - Carteirinha</title>
+  <title>Admin - Usuários</title>
 
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  />
 </head>
+
 <body class="bg-light">
-  <div class="container py-4">
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-10">
+  <div class="container-fluid py-4">
+    <div class="row g-4">
+
+      <!-- COLUNA: FORMULÁRIO -->
+      <div class="col-12 col-lg-4">
         <div class="card shadow-sm border-0">
           <div class="card-body p-4">
-            <h1 class="h4 mb-3 text-center">Cadastro de Usuário</h1>
-            <p class="text-muted text-center mb-4">
-              Preencha seus dados para solicitar sua carteirinha digital.
+            <h1 class="h5 mb-3">Cadastro / Edição de Usuário</h1>
+            <p class="text-muted small mb-3">
+              Apenas administradores podem acessar esta tela.
             </p>
 
-            <form
-              id="registerForm"
-              enctype="multipart/form-data"
-              class="row g-3"
-              novalidate
-            >
-              <div class="col-md-6">
+            <form id="registerForm" enctype="multipart/form-data" novalidate>
+              <input type="hidden" id="userId" name="userId" />
+
+              <div class="mb-2">
                 <label for="nome" class="form-label">Nome Completo</label>
-                <input
-                  type="text"
-                  id="nome"
-                  name="nome"
-                  class="form-control"
-                  placeholder="Ex.: João da Silva"
-                  required
-                />
+                <input type="text" id="nome" name="nome" class="form-control" required />
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-2">
                 <label for="nomePerfil" class="form-label">Nome Perfil</label>
-                <input
-                  type="text"
-                  id="nomePerfil"
-                  name="nomePerfil"
-                  class="form-control"
-                  placeholder="Ex.: João Silva"
-                  required
-                />
+                <input type="text" id="nomePerfil" name="nomePerfil" class="form-control" required />
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-2">
                 <label for="email" class="form-label">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  class="form-control"
-                  placeholder="Ex.: joao.silva@email.com"
-                  required
-                />
+                <input type="email" id="email" name="email" class="form-control" required />
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-2">
                 <label for="password" class="form-label">Senha</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  class="form-control"
-                  placeholder="Crie uma senha segura"
-                  required
-                />
+                <input type="password" id="password" name="password" class="form-control" />
+                <div class="form-text">
+                  Em edição, deixe em branco para manter a senha atual.
+                </div>
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-2">
                 <label for="curso" class="form-label">Curso</label>
-                <input
-                  type="text"
-                  id="curso"
-                  name="curso"
-                  class="form-control"
-                  placeholder="Ex.: Enfermagem, Análise e Desenvolvimento de Sistemas"
-                  required
-                />
+                <input type="text" id="curso" name="curso" class="form-control" required />
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-2">
                 <label for="campus" class="form-label">Campus</label>
-                <input
-                  type="text"
-                  id="campus"
-                  name="campus"
-                  class="form-control"
-                  placeholder="Ex.: Méier - RJ, Tijuca - RJ"
-                  required
-                />
+                <input type="text" id="campus" name="campus" class="form-control" required />
               </div>
 
-              <div class="col-md-4">
-                <label for="anoInicio" class="form-label">Ano de início do curso</label>
-                <select
-                  id="anoInicio"
-                  name="anoInicio"
-                  class="form-select"
-                  required
-                >
-                  <!-- opções preenchidas via JS -->
-                </select>
-                <div class="form-text">
-                  Escolha o ano em que você começou a faculdade.
-                </div>
+              <div class="mb-2">
+                <label for="matricula" class="form-label">Matrícula</label>
+                <input type="text" id="matricula" name="matricula" class="form-control" required />
               </div>
 
-              <div class="col-md-8">
-                <label for="matricula" class="form-label">Matrícula (gerada pelo sistema)</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    id="matricula"
-                    name="matricula"
-                    class="form-control"
-                    placeholder="Clique em &quot;Gerar&quot; para criar sua matrícula"
-                    readonly
-                  />
-                  <button
-                    type="button"
-                    id="btnGerarMatricula"
-                    class="btn btn-outline-secondary"
-                  >
-                    Gerar
-                  </button>
-                </div>
-                <div class="form-text">
-                  Será formada por 8 números aleatórios + o ano de início. Ex.: 23435458 + 2020 → 234354582020.
-                </div>
-              </div>
-
-              <div class="col-md-4">
+              <div class="mb-2">
                 <label for="cpf" class="form-label">CPF</label>
-                <input
-                  type="text"
-                  id="cpf"
-                  name="cpf"
-                  class="form-control"
-                  placeholder="Somente números"
-                  required
-                />
+                <input type="text" id="cpf" name="cpf" class="form-control" required />
               </div>
 
-              <div class="col-md-4">
-                <label for="dataNascimento" class="form-label">Data de Nascimento</label>
-                <input
-                  type="date"
-                  id="dataNascimento"
-                  name="dataNascimento"
-                  class="form-control"
-                  required
-                />
-              </div>
-
-              <div class="col-md-4">
+              <div class="mb-2">
                 <label for="numeroTel" class="form-label">Telefone</label>
-                <input
-                  type="tel"
-                  id="numeroTel"
-                  name="numeroTel"
-                  class="form-control"
-                  placeholder="Ex.: (21) 99999-9999"
-                  required
-                />
+                <input type="tel" id="numeroTel" name="numeroTel" class="form-control" required />
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-2">
+                <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+                <input type="date" id="dataNascimento" name="dataNascimento" class="form-control" required />
+              </div>
+
+              <div class="mb-2">
                 <label for="validade" class="form-label">Validade da Carteirinha</label>
-                <input
-                  type="date"
-                  id="validade"
-                  name="validade"
-                  class="form-control"
-                  readonly
-                />
+                <input type="date" id="validade" name="validade" class="form-control" />
                 <div class="form-text">
-                  Definida automaticamente até o último dia do semestre atual (31/07 ou 31/12).
+                  Se deixar vazio, o sistema usa automaticamente o final do semestre atual.
                 </div>
               </div>
 
-              <div class="col-md-6">
+              <div class="mb-3">
                 <label for="foto" class="form-label">Foto</label>
                 <input
                   type="file"
@@ -196,390 +101,208 @@
                   name="foto"
                   class="form-control"
                   accept="image/*"
-                  required
                 />
                 <div class="form-text">
-                  Envie uma foto de perfil, com o rosto visível (JPEG/PNG). A imagem será otimizada automaticamente antes do envio.
+                  Em edição, selecione uma nova imagem caso queira trocar a foto.
                 </div>
               </div>
 
-              <div class="col-12 mt-3">
-                <button type="submit" class="btn btn-primary w-100" id="submitBtn">
-                  <span
-                    id="submitSpinner"
-                    class="spinner-border spinner-border-sm me-2 d-none"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                  <span class="btn-text">Enviar cadastro</span>
+              <div class="d-flex gap-2">
+                <button type="submit" id="submitBtn" class="btn btn-primary flex-grow-1">
+                  Registrar
+                </button>
+
+                <button
+                  type="button"
+                  id="cancelEditBtn"
+                  class="btn btn-outline-secondary"
+                  style="display: none;"
+                >
+                  Cancelar
                 </button>
               </div>
             </form>
 
-            <hr class="my-4" />
+            <hr class="my-3" />
 
-            <p class="text-center mb-0">
-              Já tem conta?
-              <a href="/login" class="link-primary">Fazer login</a>
+            <a href="/login" class="small">Voltar para login</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA: LISTA -->
+      <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+
+            <!-- Header da lista + sino -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h2 class="h5 mb-0">Lista de Usuários</h2>
+
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary" id="userCountBadge"></span>
+
+                <button
+                  id="renewalsBell"
+                  class="btn btn-outline-secondary btn-sm position-relative"
+                  type="button"
+                  title="Pedidos de renovação pendentes"
+                >
+                  <i class="bi bi-bell"></i>
+                  <span
+                    id="renewalsBadge"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                  >
+                    0
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Busca + Filtros -->
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+              <div class="flex-grow-1">
+                <input
+                  type="text"
+                  id="searchInput"
+                  class="form-control form-control-sm"
+                  placeholder="Buscar por nome, email ou matrícula"
+                />
+              </div>
+
+              <div style="min-width: 220px;">
+                <select id="statusFilter" class="form-select form-select-sm">
+                  <option value="all">Todos</option>
+                  <option value="active">Ativos</option>
+                  <option value="inactive">Inativos</option>
+                  <option value="pending">Pendentes</option>
+                  <option value="expired">Com validade expirada</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Telefone</th>
+                    <th>Validade</th>
+                    <th>Criado em</th>
+                    <th>Renovações / Obs.</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+
+                <tbody id="userList">
+                  <!-- preenchido via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <p class="text-muted small mb-0 mt-2">
+              Use os filtros para encontrar usuários e aprove/gerencie renovações de carteirinha.
             </p>
           </div>
         </div>
-
-        <p class="text-center text-muted small mt-3">
-          Sua carteirinha digital ficará ativa até o último dia da validade informada pelo sistema. Após esse período será necessário solicitar renovação.
-        </p>
       </div>
+
     </div>
   </div>
 
-  <!-- MODAL DE INSTRUÇÕES -->
-  <div class="modal fade" id="instrucoesModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+  <!-- MODAL: renovações do usuário (já existente) -->
+  <div class="modal fade" id="renewalsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Como preencher seu cadastro</h5>
+          <h5 class="modal-title">Renovações de carteirinha</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
+
         <div class="modal-body">
-          <p class="mb-3">
-            Antes de enviar seus dados, confira estas orientações para que sua carteirinha estaja nos padrões da universidade.
+          <p class="small text-muted mb-2">
+            Aqui aparecem os pedidos de renovação deste usuário. Use os botões para aprovar ou rejeitar.
           </p>
 
-          <ol class="list-group list-group-numbered mb-3">
-            <li class="list-group-item">
-              <strong>Nome Perfil:</strong> use seu primeiro nome e um sobrenome.<br />
-              Exemplo: <code>João Silva</code>, <code>Maria Santos</code>.
-            </li>
-            <li class="list-group-item">
-              <strong>Curso:</strong> informe o nome oficial do curso que deseja.<br />
-              Exemplos: <code>Enfermagem</code>, <code>Análise e Desenvolvimento de Sistemas</code>.
-            </li>
-            <li class="list-group-item">
-              <strong>Campus:</strong> use o padrão <em>Bairro - Estado</em>.<br />
-              Exemplos: <code>Méier - RJ</code>, <code>Tijuca - RJ</code>.
-            </li>
-            <li class="list-group-item">
-              <strong>Matrícula:</strong>
-              você escolhe o ano de ínicio e o sistema gera 8 números aleatórios.
-              Sua matrícula será:
-              <code>8 dígitos aleatórios + ano</code>.<br />
-              Exemplo: <code>23435458</code> + <code>2020</code> → <code>234354582020</code>.
-            </li>
-            <li class="list-group-item">
-              <strong>Validade da carteirinha:</strong>
-              é definida automaticamente de acordo com o semestre atual:
-              até <strong>31 de julho</strong> (1º semestre) ou
-              <strong>31 de dezembro</strong> (2º semestre).
-            </li>
-            <li class="list-group-item">
-              <strong>Foto:</strong> envie uma foto de perfil com o rosto visível, boa iluminação e sem óculos escuros.
-            </li>
-          </ol>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Data</th>
+                  <th>Status</th>
+                  <th>Comprovante</th>
+                  <th>Observação do aluno</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
 
-          <p class="mb-0 text-muted small">
-            Após o envio, sua carteirinha será criada e ficará ativa até o último dia da validade atual.
-            Depois desse prazo, será necessário realizar a renovação para continuar utilizando.
-          </p>
-
+              <tbody id="renewalsTableBody">
+                <!-- preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-            Entendi, continuar cadastro
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Fechar
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap -->
+  <!-- MODAL: pedidos pendentes (sininho) -->
+  <div class="modal fade" id="pendingRenewalsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Pedidos de renovação pendentes (período atual)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="small text-muted mb-2">
+            Lista de usuários com carteirinha expirada que enviaram pedido de renovação no período atual.
+          </p>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Data do pedido</th>
+                  <th>Usuário</th>
+                  <th>Email</th>
+                  <th>Validade</th>
+                  <th>Obs.</th>
+                  <th>Comprovante</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="pendingRenewalsTableBody">
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-3">Carregando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/javaScript/ui.js"></script>
-
-  <script>
-    const form = document.getElementById('registerForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const submitSpinner = document.getElementById('submitSpinner');
-    const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
-    let isSubmitting = false;
-
-    // --- helpers de loading ---
-    function setLoading(loading) {
-      isSubmitting = loading;
-
-      if (submitBtn) {
-        submitBtn.disabled = loading;
-      }
-      if (submitSpinner) {
-        submitSpinner.classList.toggle('d-none', !loading);
-      }
-      if (btnText) {
-        btnText.textContent = loading ? 'Enviando...' : 'Enviar cadastro';
-      }
-    }
-
-    // alerta ao tentar sair durante envio
-    window.addEventListener('beforeunload', (event) => {
-      if (isSubmitting) {
-        event.preventDefault();
-        event.returnValue = '';
-      }
-    });
-
-    // --- cálculo de validade ---
-     function calcularValidadeAtual() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1; // 1-12
-
-      if (month <= 6) {
-        return `${year}-07-31`;
-      }
-      return `${year}-12-31`;
-    }
-
-
-    function preencherValidadeAutomatica() {
-      const validadeInput = document.getElementById('validade');
-      if (!validadeInput) return;
-
-      validadeInput.value = calcularValidadeAtual();
-      validadeInput.readOnly = true;
-    }
-
-    // --- anos de início ---
-    function preencherAnosInicio() {
-      const select = document.getElementById('anoInicio');
-      if (!select) return;
-
-      // limpa para evitar duplicar caso chame de novo
-      select.innerHTML = '';
-
-      const currentYear = new Date().getFullYear();
-      const minYear = currentYear - 10; // últimos 10 anos
-
-      const optionDefault = document.createElement('option');
-      optionDefault.value = '';
-      optionDefault.textContent = 'Selecione o ano';
-      optionDefault.disabled = true;
-      optionDefault.selected = true;
-      select.appendChild(optionDefault);
-
-      for (let year = currentYear; year >= minYear; year--) {
-        const opt = document.createElement('option');
-        opt.value = String(year);
-        opt.textContent = String(year);
-        select.appendChild(opt);
-      }
-    }
-
-    // --- matrícula ---
-    function gerarMatricula(ano) {
-      let num = '';
-      for (let i = 0; i < 8; i++) {
-        num += Math.floor(Math.random() * 10);
-      }
-      return num + ano;
-    }
-
-    function handleGerarMatricula() {
-      const anoSelect = document.getElementById('anoInicio');
-      const matriculaInput = document.getElementById('matricula');
-
-      if (!anoSelect.value) {
-        showAlert('Selecione o ano de início do curso antes de gerar a matrícula.', 'warning');
-        return;
-      }
-
-      const matricula = gerarMatricula(anoSelect.value);
-      matriculaInput.value = matricula;
-    }
-
-    // --- modal de instruções ---
-    function mostrarModalInstrucoes() {
-      const modalEl = document.getElementById('instrucoesModal');
-      if (!modalEl) return;
-
-      const modal = new bootstrap.Modal(modalEl, {
-        backdrop: 'static',
-        keyboard: true,
-      });
-      modal.show();
-    }
-
-    // --- compressão da imagem ---
-    async function compressImage(file, maxWidth = 800, maxHeight = 800, maxSizeMB = 1.5) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-
-            // mantém proporção e limita a 800x800
-            const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-            width = width * ratio;
-            height = height * ratio;
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            let quality = 0.9;
-
-            const attempt = () => {
-              canvas.toBlob(
-                (blob) => {
-                  if (!blob) {
-                    reject(new Error('Falha ao processar a imagem.'));
-                    return;
-                  }
-
-                  const maxBytes = maxSizeMB * 1024 * 1024;
-
-                  // se já está abaixo do limite ou qualidade chegou num mínimo, aceitamos
-                  if (blob.size <= maxBytes || quality <= 0.5) {
-                    resolve(blob);
-                  } else {
-                    quality -= 0.1;
-                    canvas.toBlob(
-                      (newBlob) => {
-                        if (!newBlob) {
-                          reject(new Error('Falha ao processar a imagem.'));
-                          return;
-                        }
-                        if (newBlob.size <= maxBytes || quality <= 0.5) {
-                          resolve(newBlob);
-                        } else {
-                          attempt();
-                        }
-                      },
-                      'image/jpeg',
-                      quality
-                    );
-                  }
-                },
-                'image/jpeg',
-                quality
-              );
-            };
-
-            attempt();
-          };
-
-          img.onerror = () => reject(new Error('Não foi possível carregar a imagem.'));
-          img.src = e.target.result;
-        };
-
-        reader.onerror = () => reject(new Error('Erro ao ler o arquivo de imagem.'));
-        reader.readAsDataURL(file);
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      preencherValidadeAutomatica();
-      preencherAnosInicio();
-      mostrarModalInstrucoes();
-
-      const btnGerarMatricula = document.getElementById('btnGerarMatricula');
-      if (btnGerarMatricula) {
-        btnGerarMatricula.addEventListener('click', handleGerarMatricula);
-      }
-    });
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      if (isSubmitting) {
-        return; // evita clique duplo
-      }
-
-      const fotoInput = form.foto;
-      const fotoFile = fotoInput.files[0];
-
-      if (!fotoFile) {
-        showAlert('Selecione uma foto.', 'warning');
-        return;
-      }
-
-      if (!fotoFile.type.startsWith('image/')) {
-        showAlert('Arquivo inválido. Selecione uma imagem (jpeg, png, etc).', 'error');
-        return;
-      }
-
-      // garante que a matrícula e a validade estejam preenchidas antes de enviar
-      const anoSelect = document.getElementById('anoInicio');
-      const matriculaInput = document.getElementById('matricula');
-      const validadeInput = document.getElementById('validade');
-
-      if (!anoSelect.value) {
-        showAlert('Selecione o ano de início do curso.', 'warning');
-        return;
-      }
-
-      if (!matriculaInput.value) {
-        matriculaInput.value = gerarMatricula(anoSelect.value);
-      }
-
-      if (!validadeInput.value) {
-        validadeInput.value = calcularValidadeAtual();
-      }
-
-      setLoading(true);
-
-      try {
-        // sempre tenta comprimir a imagem, independente do tamanho original
-        let finalFoto;
-        try {
-          const compressedBlob = await compressImage(fotoFile, 800, 800, 1.5);
-          finalFoto = new File([compressedBlob], 'foto_comprimida.jpg', {
-            type: 'image/jpeg',
-          });
-        } catch (compressErr) {
-          console.error('Erro ao comprimir imagem:', compressErr);
-          showAlert(
-            'Não foi possível otimizar a imagem. Tentaremos enviar a foto original.',
-            'warning'
-          );
-          finalFoto = fotoFile;
-        }
-
-        const formData = new FormData(form);
-        // substitui a foto original pela foto final (possivelmente comprimida)
-        formData.set('foto', finalFoto);
-
-        const response = await fetch('/api/public/register', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          showAlert(data.error || 'Erro ao criar cadastro.', 'error');
-          setLoading(false);
-          return;
-        }
-
-        showAlert('Cadastro realizado!', 'success');
-        form.reset();
-        preencherValidadeAutomatica();
-        preencherAnosInicio();
-
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1200);
-      } catch (error) {
-        console.error('Erro no cadastro público:', error);
-        showAlert('Erro ao criar cadastro. Tente novamente.', 'error');
-        setLoading(false);
-      }
-    });
-  </script>
-  
+  <script src="/javaScript/adminUsers.js"></script>
 </body>
 </html>
