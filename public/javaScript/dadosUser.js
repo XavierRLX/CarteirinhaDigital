@@ -193,8 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // payload alinhado com o backend (server.js -> PUT /api/me/:id)
   const payload = {
-    id: user.id,
     nome: formMeusDados.nomeCompleto.value.trim(),
     nomePerfil: formMeusDados.nomePerfil.value.trim(),
     curso: formMeusDados.curso.value.trim(),
@@ -202,22 +202,16 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   try {
-    const resp = await fetch('/api/me/update-profile', {
+    const resp = await fetch(`/api/me/${encodeURIComponent(user.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
-    const text = await resp.text(); // pode vir JSON ou erro simples
-    let body = {};
-    try {
-      body = JSON.parse(text || '{}');
-    } catch {
-      body = {};
-    }
+    const body = await resp.json().catch(() => ({}));
 
     if (!resp.ok) {
-      console.error('Erro na atualização de perfil:', resp.status, text);
+      console.error('Erro na atualização de perfil:', resp.status, body);
       alert(body.error || `Erro ao atualizar dados. Código: ${resp.status}`);
       return;
     }
@@ -236,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     alert('Erro ao atualizar dados. Tente novamente.');
   }
 });
+
 
   }
 });
