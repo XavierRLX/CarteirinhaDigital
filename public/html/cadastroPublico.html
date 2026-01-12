@@ -11,6 +11,7 @@
     rel="stylesheet"
   />
 </head>
+
 <body class="bg-light">
   <div class="container py-4">
     <div class="row justify-content-center">
@@ -27,6 +28,7 @@
               enctype="multipart/form-data"
               class="row g-3"
               novalidate
+              autocomplete="off"
             >
               <div class="col-md-6">
                 <label for="nome" class="form-label">Nome Completo</label>
@@ -37,7 +39,9 @@
                   class="form-control"
                   placeholder="Ex.: João da Silva"
                   required
+                  autocomplete="name"
                 />
+                <div class="invalid-feedback" id="nomeFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -49,7 +53,9 @@
                   class="form-control"
                   placeholder="Ex.: João Silva"
                   required
+                  autocomplete="nickname"
                 />
+                <div class="invalid-feedback" id="nomePerfilFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -61,7 +67,10 @@
                   class="form-control"
                   placeholder="Ex.: joao.silva@email.com"
                   required
+                  autocomplete="email"
+                  inputmode="email"
                 />
+                <div class="invalid-feedback" id="emailFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -73,7 +82,11 @@
                   class="form-control"
                   placeholder="Crie uma senha segura"
                   required
+                  minlength="8"
+                  autocomplete="new-password"
                 />
+                <div class="form-text">Mínimo de 8 caracteres (recomendado: letras + números).</div>
+                <div class="invalid-feedback" id="passwordFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -85,7 +98,9 @@
                   class="form-control"
                   placeholder="Ex.: Enfermagem, Análise e Desenvolvimento de Sistemas"
                   required
+                  autocomplete="off"
                 />
+                <div class="invalid-feedback" id="cursoFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -97,7 +112,9 @@
                   class="form-control"
                   placeholder="Ex.: Méier - RJ, Tijuca - RJ"
                   required
+                  autocomplete="off"
                 />
+                <div class="invalid-feedback" id="campusFeedback"></div>
               </div>
 
               <div class="col-md-4">
@@ -110,9 +127,8 @@
                 >
                   <!-- opções preenchidas via JS -->
                 </select>
-                <div class="form-text">
-                  Escolha o ano em que você começou a faculdade.
-                </div>
+                <div class="form-text">Escolha o ano em que você começou a faculdade.</div>
+                <div class="invalid-feedback" id="anoInicioFeedback"></div>
               </div>
 
               <div class="col-md-8">
@@ -123,8 +139,9 @@
                     id="matricula"
                     name="matricula"
                     class="form-control"
-                    placeholder="Clique em &quot;Gerar&quot; para criar sua matrícula"
+                    placeholder='Clique em "Gerar" para criar sua matrícula'
                     readonly
+                    autocomplete="off"
                   />
                   <button
                     type="button"
@@ -137,6 +154,7 @@
                 <div class="form-text">
                   Será formada por 8 números aleatórios + o ano de início. Ex.: 23435458 + 2020 → 234354582020.
                 </div>
+                <div class="invalid-feedback d-block" id="matriculaFeedback"></div>
               </div>
 
               <div class="col-md-4">
@@ -146,9 +164,12 @@
                   id="cpf"
                   name="cpf"
                   class="form-control"
-                  placeholder="Somente números"
+                  placeholder="000.000.000-00"
                   required
+                  inputmode="numeric"
+                  autocomplete="off"
                 />
+                <div class="invalid-feedback" id="cpfFeedback"></div>
               </div>
 
               <div class="col-md-4">
@@ -159,7 +180,9 @@
                   name="dataNascimento"
                   class="form-control"
                   required
+                  autocomplete="bday"
                 />
+                <div class="invalid-feedback" id="dataNascimentoFeedback"></div>
               </div>
 
               <div class="col-md-4">
@@ -169,9 +192,12 @@
                   id="numeroTel"
                   name="numeroTel"
                   class="form-control"
-                  placeholder="Ex.: (21) 99999-9999"
+                  placeholder="(21) 99999-9999"
                   required
+                  inputmode="tel"
+                  autocomplete="tel"
                 />
+                <div class="invalid-feedback" id="numeroTelFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -182,10 +208,12 @@
                   name="validade"
                   class="form-control"
                   readonly
+                  autocomplete="off"
                 />
                 <div class="form-text">
                   Definida automaticamente até o último dia do semestre atual (31/07 ou 31/12).
                 </div>
+                <div class="invalid-feedback" id="validadeFeedback"></div>
               </div>
 
               <div class="col-md-6">
@@ -197,10 +225,12 @@
                   class="form-control"
                   accept="image/*"
                   required
+                  autocomplete="off"
                 />
                 <div class="form-text">
-                  Envie uma foto de perfil, com o rosto visível (JPEG/PNG). A imagem será otimizada automaticamente antes do envio.
+                  Envie uma foto com o rosto visível (JPEG/PNG). A imagem será otimizada antes do envio.
                 </div>
+                <div class="invalid-feedback" id="fotoFeedback"></div>
               </div>
 
               <div class="col-12 mt-3">
@@ -226,7 +256,7 @@
         </div>
 
         <p class="text-center text-muted small mt-3">
-          Sua carteirinha digital ficará ativa até o último dia da validade informada pelo sistema. Após esse período será necessário solicitar renovação.
+          Sua carteirinha digital ficará ativa até o último dia da validade informada pelo sistema.
         </p>
       </div>
     </div>
@@ -242,45 +272,37 @@
         </div>
         <div class="modal-body">
           <p class="mb-3">
-            Antes de enviar seus dados, confira estas orientações para que sua carteirinha estaja nos padrões da universidade.
+            Antes de enviar seus dados, confira estas orientações para que sua carteirinha esteja nos padrões da universidade.
           </p>
 
           <ol class="list-group list-group-numbered mb-3">
             <li class="list-group-item">
               <strong>Nome Perfil:</strong> use seu primeiro nome e um sobrenome.<br />
-              Exemplo: <code>João Silva</code>, <code>Maria Santos</code>.
+              Ex.: <code>João Silva</code>, <code>Maria Santos</code>.
             </li>
             <li class="list-group-item">
               <strong>Curso:</strong> informe o nome oficial do curso que deseja.<br />
-              Exemplos: <code>Enfermagem</code>, <code>Análise e Desenvolvimento de Sistemas</code>.
+              Ex.: <code>Enfermagem</code>, <code>Análise e Desenvolvimento de Sistemas</code>.
             </li>
             <li class="list-group-item">
               <strong>Campus:</strong> use o padrão <em>Bairro - Estado</em>.<br />
-              Exemplos: <code>Méier - RJ</code>, <code>Tijuca - RJ</code>.
+              Ex.: <code>Méier - RJ</code>, <code>Tijuca - RJ</code>.
             </li>
             <li class="list-group-item">
-              <strong>Matrícula:</strong>
-              você escolhe o ano de ínicio e o sistema gera 8 números aleatórios.
-              Sua matrícula será:
-              <code>8 dígitos aleatórios + ano</code>.<br />
-              Exemplo: <code>23435458</code> + <code>2020</code> → <code>234354582020</code>.
+              <strong>Matrícula:</strong> <code>8 dígitos aleatórios + ano</code>.<br />
+              Ex.: <code>23435458</code> + <code>2020</code> → <code>234354582020</code>.
             </li>
             <li class="list-group-item">
-              <strong>Validade da carteirinha:</strong>
-              é definida automaticamente de acordo com o semestre atual:
-              até <strong>31 de julho</strong> (1º semestre) ou
-              <strong>31 de dezembro</strong> (2º semestre).
+              <strong>Validade:</strong> até <strong>31/07</strong> (1º semestre) ou <strong>31/12</strong> (2º semestre).
             </li>
             <li class="list-group-item">
-              <strong>Foto:</strong> envie uma foto de perfil com o rosto visível, boa iluminação e sem óculos escuros.
+              <strong>Foto:</strong> rosto visível, boa iluminação e sem óculos escuros.
             </li>
           </ol>
 
           <p class="mb-0 text-muted small">
             Após o envio, sua carteirinha será criada e ficará ativa até o último dia da validade atual.
-            Depois desse prazo, será necessário realizar a renovação para continuar utilizando.
           </p>
-
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
@@ -300,24 +322,50 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitSpinner = document.getElementById('submitSpinner');
     const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
+
     let isSubmitting = false;
 
-    // --- helpers de loading ---
+    // ===== UX helpers =====
+
+    const DEFAULT_SUBMIT_TEXT = 'Enviar cadastro';
+let lockSubmitText = false;
+
+function setLoading(loading) {
+  isSubmitting = loading;
+
+  if (submitBtn) submitBtn.disabled = loading;
+  if (submitSpinner) submitSpinner.classList.toggle('d-none', !loading);
+
+  // só muda o texto se não estiver travado por sucesso
+  if (btnText && !lockSubmitText) {
+    btnText.textContent = loading ? 'Enviando...' : DEFAULT_SUBMIT_TEXT;
+  }
+}
+
+function showSubmitSuccessState() {
+  lockSubmitText = true;
+
+  submitBtn?.classList.remove('btn-primary');
+  submitBtn?.classList.add('btn-success');
+
+  if (btnText) btnText.textContent = 'Cadastro enviado ✅';
+
+  setTimeout(() => {
+    submitBtn?.classList.remove('btn-success');
+    submitBtn?.classList.add('btn-primary');
+
+    lockSubmitText = false;
+    if (btnText) btnText.textContent = DEFAULT_SUBMIT_TEXT;
+  }, 2000);
+}
+
     function setLoading(loading) {
       isSubmitting = loading;
-
-      if (submitBtn) {
-        submitBtn.disabled = loading;
-      }
-      if (submitSpinner) {
-        submitSpinner.classList.toggle('d-none', !loading);
-      }
-      if (btnText) {
-        btnText.textContent = loading ? 'Enviando...' : 'Enviar cadastro';
-      }
+      if (submitBtn) submitBtn.disabled = loading;
+      if (submitSpinner) submitSpinner.classList.toggle('d-none', !loading);
+      if (btnText) btnText.textContent = loading ? 'Enviando...' : 'Enviar cadastro';
     }
 
-    // alerta ao tentar sair durante envio
     window.addEventListener('beforeunload', (event) => {
       if (isSubmitting) {
         event.preventDefault();
@@ -325,37 +373,117 @@
       }
     });
 
-    // --- cálculo de validade ---
-     function calcularValidadeAtual() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1; // 1-12
-
-      if (month <= 6) {
-        return `${year}-07-31`;
-      }
-      return `${year}-12-31`;
+    function clearFieldErrors() {
+      const els = form.querySelectorAll('input, select, textarea');
+      els.forEach((el) => {
+        el.classList.remove('is-invalid', 'is-valid');
+      });
+      const feedbacks = form.querySelectorAll('.invalid-feedback, .invalid-feedback.d-block');
+      feedbacks.forEach((fb) => { fb.textContent = ''; });
     }
 
+    function setFieldError(fieldName, message) {
+      const el = form.elements[fieldName];
+      if (!el) return;
+
+      el.classList.add('is-invalid');
+      el.classList.remove('is-valid');
+
+      const fb = document.getElementById(`${fieldName}Feedback`);
+      if (fb) fb.textContent = message || 'Campo inválido.';
+    }
+
+    function setFieldValid(fieldName) {
+      const el = form.elements[fieldName];
+      if (!el) return;
+      el.classList.remove('is-invalid');
+      el.classList.add('is-valid');
+      const fb = document.getElementById(`${fieldName}Feedback`);
+      if (fb) fb.textContent = '';
+    }
+
+    function onlyDigits(v) {
+      return String(v || '').replace(/\D/g, '');
+    }
+
+    // ===== Regras (front) =====
+    function isValidEmail(email) {
+      email = String(email || '').trim().toLowerCase();
+      // simples e eficiente pro front
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidCPF(cpf) {
+      cpf = onlyDigits(cpf);
+      if (cpf.length !== 11) return false;
+      if (/^(\d)\1+$/.test(cpf)) return false;
+
+      const calc = (base) => {
+        let sum = 0;
+        for (let i = 0; i < base; i++) sum += Number(cpf[i]) * ((base + 1) - i);
+        const mod = (sum * 10) % 11;
+        return mod === 10 ? 0 : mod;
+      };
+
+      const d1 = calc(9);
+      const d2 = calc(10);
+      return d1 === Number(cpf[9]) && d2 === Number(cpf[10]);
+    }
+
+    function isStrongEnoughPassword(pw) {
+      pw = String(pw || '');
+      if (pw.length < 8) return false;
+      // recomendado: pelo menos 1 letra e 1 número
+      return /[A-Za-z]/.test(pw) && /\d/.test(pw);
+    }
+
+    function validateNomePerfil(nomePerfil) {
+      const val = String(nomePerfil || '').trim();
+      const parts = val.split(/\s+/).filter(Boolean);
+      return parts.length >= 2;
+    }
+
+    // ===== Máscaras leves =====
+    function maskCPF(value) {
+      const d = onlyDigits(value).slice(0, 11);
+      if (d.length <= 3) return d;
+      if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
+      if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+      return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+    }
+
+    function maskPhone(value) {
+      const d = onlyDigits(value).slice(0, 11);
+      if (d.length <= 2) return d ? `(${d}` : '';
+      if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+      if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+      return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+    }
+
+    // ===== Validade =====
+    function calcularValidadeAtual() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      return month <= 6 ? `${year}-07-31` : `${year}-12-31`;
+    }
 
     function preencherValidadeAutomatica() {
       const validadeInput = document.getElementById('validade');
       if (!validadeInput) return;
-
       validadeInput.value = calcularValidadeAtual();
       validadeInput.readOnly = true;
     }
 
-    // --- anos de início ---
+    // ===== Ano de início =====
     function preencherAnosInicio() {
       const select = document.getElementById('anoInicio');
       if (!select) return;
 
-      // limpa para evitar duplicar caso chame de novo
       select.innerHTML = '';
 
       const currentYear = new Date().getFullYear();
-      const minYear = currentYear - 10; // últimos 10 anos
+      const minYear = currentYear - 10;
 
       const optionDefault = document.createElement('option');
       optionDefault.value = '';
@@ -372,12 +500,10 @@
       }
     }
 
-    // --- matrícula ---
+    // ===== Matrícula =====
     function gerarMatricula(ano) {
       let num = '';
-      for (let i = 0; i < 8; i++) {
-        num += Math.floor(Math.random() * 10);
-      }
+      for (let i = 0; i < 8; i++) num += Math.floor(Math.random() * 10);
       return num + ano;
     }
 
@@ -387,14 +513,17 @@
 
       if (!anoSelect.value) {
         showAlert('Selecione o ano de início do curso antes de gerar a matrícula.', 'warning');
+        setFieldError('anoInicio', 'Selecione o ano de início.');
         return;
       }
 
       const matricula = gerarMatricula(anoSelect.value);
       matriculaInput.value = matricula;
+      setFieldValid('anoInicio');
+      setFieldValid('matricula');
     }
 
-    // --- modal de instruções ---
+    // ===== Modal instruções =====
     function mostrarModalInstrucoes() {
       const modalEl = document.getElementById('instrucoesModal');
       if (!modalEl) return;
@@ -406,180 +535,170 @@
       modal.show();
     }
 
-    // --- compressão da imagem ---
+    // ===== Compressão (melhorada) =====
     async function compressImage(file, maxWidth = 800, maxHeight = 800, maxSizeMB = 1.5) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
+      const maxBytes = maxSizeMB * 1024 * 1024;
+
+      const dataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-
-        reader.onload = (e) => {
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-
-            // mantém proporção e limita a 800x800
-            const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-            width = width * ratio;
-            height = height * ratio;
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            let quality = 0.9;
-
-            const attempt = () => {
-              canvas.toBlob(
-                (blob) => {
-                  if (!blob) {
-                    reject(new Error('Falha ao processar a imagem.'));
-                    return;
-                  }
-
-                  const maxBytes = maxSizeMB * 1024 * 1024;
-
-                  // se já está abaixo do limite ou qualidade chegou num mínimo, aceitamos
-                  if (blob.size <= maxBytes || quality <= 0.5) {
-                    resolve(blob);
-                  } else {
-                    quality -= 0.1;
-                    canvas.toBlob(
-                      (newBlob) => {
-                        if (!newBlob) {
-                          reject(new Error('Falha ao processar a imagem.'));
-                          return;
-                        }
-                        if (newBlob.size <= maxBytes || quality <= 0.5) {
-                          resolve(newBlob);
-                        } else {
-                          attempt();
-                        }
-                      },
-                      'image/jpeg',
-                      quality
-                    );
-                  }
-                },
-                'image/jpeg',
-                quality
-              );
-            };
-
-            attempt();
-          };
-
-          img.onerror = () => reject(new Error('Não foi possível carregar a imagem.'));
-          img.src = e.target.result;
-        };
-
-        reader.onerror = () => reject(new Error('Erro ao ler o arquivo de imagem.'));
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Erro ao ler a imagem.'));
         reader.readAsDataURL(file);
       });
+
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error('Não foi possível carregar a imagem.'));
+        i.src = dataUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const toBlob = (quality) =>
+        new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+
+      let quality = 0.9;
+      let blob = await toBlob(quality);
+
+      while (blob && blob.size > maxBytes && quality > 0.5) {
+        quality -= 0.1;
+        blob = await toBlob(quality);
+      }
+
+      if (!blob) throw new Error('Falha ao processar a imagem.');
+
+      return blob;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // ===== Auto-redirect se já estiver logado =====
+    async function redirectIfLogged() {
+      try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        if (res.ok) {
+        }
+      } catch {
+        // ignora
+      }
+    }
+
+    // ===== Eventos =====
+    document.addEventListener('DOMContentLoaded', async () => {
+      await redirectIfLogged();
+
       preencherValidadeAutomatica();
       preencherAnosInicio();
       mostrarModalInstrucoes();
 
       const btnGerarMatricula = document.getElementById('btnGerarMatricula');
-      if (btnGerarMatricula) {
-        btnGerarMatricula.addEventListener('click', handleGerarMatricula);
-      }
-    });
+      if (btnGerarMatricula) btnGerarMatricula.addEventListener('click', handleGerarMatricula);
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
+      // máscaras
+      form.cpf.addEventListener('input', () => {
+        form.cpf.value = maskCPF(form.cpf.value);
+        if (form.cpf.classList.contains('is-invalid')) setFieldValid('cpf');
+      });
 
-      if (isSubmitting) {
-        return; // evita clique duplo
-      }
+      form.numeroTel.addEventListener('input', () => {
+        form.numeroTel.value = maskPhone(form.numeroTel.value);
+        if (form.numeroTel.classList.contains('is-invalid')) setFieldValid('numeroTel');
+      });
 
-      const fotoInput = form.foto;
-      const fotoFile = fotoInput.files[0];
-
-      if (!fotoFile) {
-        showAlert('Selecione uma foto.', 'warning');
-        return;
-      }
-
-      if (!fotoFile.type.startsWith('image/')) {
-        showAlert('Arquivo inválido. Selecione uma imagem (jpeg, png, etc).', 'error');
-        return;
-      }
-
-      // garante que a matrícula e a validade estejam preenchidas antes de enviar
-      const anoSelect = document.getElementById('anoInicio');
-      const matriculaInput = document.getElementById('matricula');
-      const validadeInput = document.getElementById('validade');
-
-      if (!anoSelect.value) {
-        showAlert('Selecione o ano de início do curso.', 'warning');
-        return;
-      }
-
-      if (!matriculaInput.value) {
-        matriculaInput.value = gerarMatricula(anoSelect.value);
-      }
-
-      if (!validadeInput.value) {
-        validadeInput.value = calcularValidadeAtual();
-      }
-
-      setLoading(true);
-
-      try {
-        // sempre tenta comprimir a imagem, independente do tamanho original
-        let finalFoto;
-        try {
-          const compressedBlob = await compressImage(fotoFile, 800, 800, 1.5);
-          finalFoto = new File([compressedBlob], 'foto_comprimida.jpg', {
-            type: 'image/jpeg',
-          });
-        } catch (compressErr) {
-          console.error('Erro ao comprimir imagem:', compressErr);
-          showAlert(
-            'Não foi possível otimizar a imagem. Tentaremos enviar a foto original.',
-            'warning'
-          );
-          finalFoto = fotoFile;
-        }
-
-        const formData = new FormData(form);
-        // substitui a foto original pela foto final (possivelmente comprimida)
-        formData.set('foto', finalFoto);
-
-        const response = await fetch('/api/public/register', {
-          method: 'POST',
-          body: formData,
+      // limpar erros ao digitar
+      ['nome','nomePerfil','email','password','curso','campus','anoInicio','dataNascimento','foto'].forEach((name) => {
+        const el = form.elements[name];
+        if (!el) return;
+        el.addEventListener('input', () => {
+          if (el.classList.contains('is-invalid')) setFieldValid(name);
         });
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          showAlert(data.error || 'Erro ao criar cadastro.', 'error');
-          setLoading(false);
-          return;
-        }
-
-        showAlert('Cadastro realizado!', 'success');
-        form.reset();
-        preencherValidadeAutomatica();
-        preencherAnosInicio();
-
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1200);
-      } catch (error) {
-        console.error('Erro no cadastro público:', error);
-        showAlert('Erro ao criar cadastro. Tente novamente.', 'error');
-        setLoading(false);
-      }
+        el.addEventListener('change', () => {
+          if (el.classList.contains('is-invalid')) setFieldValid(name);
+        });
+      });
     });
+
+    // ===== Submit =====
+    form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (isSubmitting) return;
+
+  // validações mínimas (mantém as suas)
+  const fotoFile = form.foto?.files?.[0];
+  if (!fotoFile) return showAlert('Selecione uma foto.', 'warning');
+  if (!fotoFile.type.startsWith('image/')) return showAlert('Arquivo inválido. Selecione uma imagem.', 'error');
+
+  const anoSelect = document.getElementById('anoInicio');
+  const matriculaInput = document.getElementById('matricula');
+  const validadeInput = document.getElementById('validade');
+
+  if (!anoSelect?.value) return showAlert('Selecione o ano de início do curso.', 'warning');
+  if (!matriculaInput.value) matriculaInput.value = gerarMatricula(anoSelect.value);
+  if (!validadeInput.value) validadeInput.value = calcularValidadeAtual();
+
+  setLoading(true);
+
+  try {
+    let finalFoto = fotoFile;
+
+    try {
+      const compressedBlob = await compressImage(fotoFile, 800, 800, 1.5);
+      finalFoto = new File([compressedBlob], 'foto.jpg', { type: 'image/jpeg' });
+    } catch (err) {
+      console.warn('Compressão falhou, enviando original:', err);
+      showAlert('Não foi possível otimizar a imagem. Enviando a foto original.', 'warning');
+      finalFoto = fotoFile;
+    }
+
+    const formData = new FormData(form);
+    formData.set('foto', finalFoto);
+
+    const response = await fetch('/api/public/register', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include', // <<< essencial para cookie de sessão funcionar
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showAlert(data.error || 'Erro ao criar cadastro.', 'error');
+      return;
+    }
+
+    // ✅ se sua área logada ainda usa localStorage, isso evita o “faça login novamente”
+    if (data.user?.id) localStorage.setItem('userId', data.user.id);
+
+    showAlert('Cadastro realizado com sucesso! Use o botão "Fazer login" quando quiser.', 'success');
+
+    // feedback no botão
+    showSubmitSuccessState();
+
+    // opcional: resetar o formulário (se quiser manter os dados, remova)
+    form.reset();
+    preencherValidadeAutomatica();
+    preencherAnosInicio();
+    matriculaInput.value = '';
+
+  } catch (error) {
+    console.error(error);
+    showAlert('Erro ao criar cadastro. Tente novamente.', 'error');
+  } finally {
+    setLoading(false); // ✅ garante que nunca fica travado
+  }
+});
+
   </script>
-  
 </body>
 </html>

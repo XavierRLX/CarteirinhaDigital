@@ -9,18 +9,56 @@ const emailRoutes = require('./Routes/emailRoutes');
 const multer = require('multer');
 const { randomUUID } = require('crypto');
 
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 /* ------------------------------------------------------------------
-   1. Upload em memória (para fotos de usuário / comprovante)
-   - Limite de 5MB: ok, porque o front já comprime a imagem
+   0. Config JWT (sessão via cookie HttpOnly)
+------------------------------------------------------------------- */
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.warn('⚠️ JWT_SECRET não configurado no .env (sessão não vai funcionar).');
+}
+
+function issueSession(res, userId) {
+  if (!JWT_SECRET) return;
+
+  const token = jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '7d' });
+
+  res.cookie('session', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearSession(res) {
+  res.clearCookie('session');
+}
+
+function authRequired(req, res, next) {
+  const token = req.cookies?.session;
+  if (!token) {
+    return res.status(401).json({ error: 'Não autenticado', code: 'NO_SESSION' });
+  }
+  try {
+    req.auth = jwt.verify(token, JWT_SECRET);
+    return next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Sessão expirada', code: 'SESSION_EXPIRED' });
+  }
+}
+
+/* ------------------------------------------------------------------
+   1. Upload em memória
 ------------------------------------------------------------------- */
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
 /* ------------------------------------------------------------------
@@ -28,8 +66,9 @@ const upload = multer({
 ------------------------------------------------------------------- */
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-// Arquivos estáticos
+// Estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/style', express.static(path.join(__dirname, 'public', 'style')));
 app.use('/javaScript', express.static(path.join(__dirname, 'public', 'javaScript')));
@@ -42,20 +81,15 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-  console.warn('⚠️  Variáveis do Supabase não configuradas no .env');
+  console.warn('⚠️ Variáveis do Supabase não configuradas no .env');
 }
 
-// Cliente "público" (reservado, se quiser usar depois)
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Cliente admin – usa service_role, só aqui no backend
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 /* ------------------------------------------------------------------
    4. Helpers
 ------------------------------------------------------------------- */
-
-// Senha simples para proteger as rotas de admin
 const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD || 'admin1234';
 
 function requireAdmin(req, res, next) {
@@ -66,7 +100,6 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// Mapeia o registro do banco para o objeto seguro enviado ao front
 function mapUserToSafeUser(user) {
   return {
     id: user.id,
@@ -81,14 +114,90 @@ function mapUserToSafeUser(user) {
     dataNascimento: user.data_nascimento,
     validade: user.validade,
     fotoUrl: user.foto_url,
+    status: user.status,
   };
 }
 
-// Upload da imagem para o bucket "avatars" e retorna a URL pública
+function onlyDigits(v) {
+  return String(v || '').replace(/\D/g, '');
+}
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function isValidEmail(email) {
+  email = normalizeEmail(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidCPF(cpf) {
+  cpf = onlyDigits(cpf);
+  if (cpf.length !== 11) return false;
+  if (/^(\d)\1+$/.test(cpf)) return false;
+
+  const calc = (base) => {
+    let sum = 0;
+    for (let i = 0; i < base; i++) sum += Number(cpf[i]) * ((base + 1) - i);
+    const mod = (sum * 10) % 11;
+    return mod === 10 ? 0 : mod;
+  };
+
+  const d1 = calc(9);
+  const d2 = calc(10);
+  return d1 === Number(cpf[9]) && d2 === Number(cpf[10]);
+}
+
+function isStrongEnoughPassword(pw) {
+  pw = String(pw || '');
+  if (pw.length < 8) return false;
+  return /[A-Za-z]/.test(pw) && /\d/.test(pw);
+}
+
+function validateNomePerfil(nomePerfil) {
+  const val = String(nomePerfil || '').trim();
+  const parts = val.split(/\s+/).filter(Boolean);
+  return parts.length >= 2;
+}
+
+// validação do payload do cadastro público (retorna fields errors)
+function validateRegisterPayload(body) {
+  const fields = {};
+
+  const nome = String(body.nome || '').trim();
+  const nomePerfil = String(body.nomePerfil || '').trim();
+  const email = normalizeEmail(body.email);
+  const password = String(body.password || '');
+  const curso = String(body.curso || '').trim();
+  const campus = String(body.campus || '').trim();
+  const matricula = String(body.matricula || '').trim();
+  const cpf = body.cpf;
+  const numeroTel = body.numeroTel;
+  const dataNascimento = body.dataNascimento;
+
+  if (nome.length < 3) fields.nome = 'Informe seu nome completo.';
+  if (!validateNomePerfil(nomePerfil)) fields.nomePerfil = 'Use seu primeiro nome e um sobrenome.';
+  if (!isValidEmail(email)) fields.email = 'Email inválido.';
+  if (!isStrongEnoughPassword(password)) fields.password = 'Senha fraca. Use mínimo 8 caracteres com letras e números.';
+  if (curso.length < 2) fields.curso = 'Informe o curso.';
+  if (campus.length < 2) fields.campus = 'Informe o campus.';
+
+  // 8 dígitos + 4 do ano => 12
+  if (!/^\d{12}$/.test(matricula)) fields.matricula = 'Matrícula inválida. Gere novamente.';
+
+  if (!isValidCPF(cpf)) fields.cpf = 'CPF inválido.';
+
+  const tel = onlyDigits(numeroTel);
+  if (!(tel.length === 10 || tel.length === 11)) fields.numeroTel = 'Telefone inválido (DDD + número).';
+
+  if (!dataNascimento) fields.dataNascimento = 'Data de nascimento é obrigatória.';
+
+  return fields;
+}
+
+// Upload da imagem para bucket "avatars"
 async function uploadUserImage(file) {
-  if (!file) {
-    throw new Error('Foto é obrigatória');
-  }
+  if (!file) throw new Error('Foto é obrigatória');
 
   if (!file.mimetype.startsWith('image/')) {
     throw new Error('Arquivo de foto inválido. Envie apenas imagens.');
@@ -99,9 +208,7 @@ async function uploadUserImage(file) {
 
   const { error: uploadError } = await supabaseAdmin.storage
     .from('avatars')
-    .upload(filePath, file.buffer, {
-      contentType: file.mimetype,
-    });
+    .upload(filePath, file.buffer, { contentType: file.mimetype });
 
   if (uploadError) {
     console.error('Erro upload imagem:', uploadError);
@@ -109,15 +216,12 @@ async function uploadUserImage(file) {
   }
 
   const { data } = supabaseAdmin.storage.from('avatars').getPublicUrl(filePath);
-
   return data.publicUrl;
 }
 
-// Upload da imagem de comprovante de renovação
+// Upload de comprovante
 async function uploadRenewalProof(file) {
-  if (!file) {
-    throw new Error('Comprovante é obrigatório');
-  }
+  if (!file) throw new Error('Comprovante é obrigatório');
 
   if (!file.mimetype.startsWith('image/')) {
     throw new Error('Envie uma imagem do comprovante (jpeg, png, etc).');
@@ -128,9 +232,7 @@ async function uploadRenewalProof(file) {
 
   const { error: uploadError } = await supabaseAdmin.storage
     .from('renewals')
-    .upload(filePath, file.buffer, {
-      contentType: file.mimetype,
-    });
+    .upload(filePath, file.buffer, { contentType: file.mimetype });
 
   if (uploadError) {
     console.error('Erro upload comprovante:', uploadError);
@@ -138,17 +240,13 @@ async function uploadRenewalProof(file) {
   }
 
   const { data } = supabaseAdmin.storage.from('renewals').getPublicUrl(filePath);
-
   return data.publicUrl;
 }
-
-//verifiacao de renovação admin:
 
 function getCurrentSemesterRange(now = new Date()) {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  // 1º semestre: 01/01 até 31/07
   if (month <= 6) {
     return {
       startISO: new Date(`${year}-01-01T00:00:00.000Z`).toISOString(),
@@ -156,29 +254,18 @@ function getCurrentSemesterRange(now = new Date()) {
     };
   }
 
-  // 2º semestre: 01/08 até 31/12
   return {
     startISO: new Date(`${year}-08-01T00:00:00.000Z`).toISOString(),
     endISO: new Date(`${year}-12-31T23:59:59.999Z`).toISOString(),
   };
 }
 
-
-// calcula a validade da carteirinha baseado no semestre atual
 function getNextSemesterValidity(now = new Date()) {
   const year = now.getFullYear();
-  const month = now.getMonth() + 1; // 1 - 12
-
-  // 1º semestre => até 31 de julho
-  if (month <= 6) {
-    return `${year}-07-31`;
-  }
-
-  // 2º semestre => até 31 de dezembro
-  return `${year}-12-31`;
+  const month = now.getMonth() + 1;
+  return month <= 6 ? `${year}-07-31` : `${year}-12-31`;
 }
 
-// verifica se está expirada (true = expirada)
 function isCardExpired(validade) {
   if (!validade) return true;
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -186,19 +273,14 @@ function isCardExpired(validade) {
 }
 
 /* ------------------------------------------------------------------
-   5. Rotas de API - Renovação de carteirinha
+   5. Rotas de API - Renovação
 ------------------------------------------------------------------- */
-
-// Pedido de renovação da carteirinha
 app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
   try {
     const { userId, mensagem } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({ error: 'userId é obrigatório' });
-    }
+    if (!userId) return res.status(400).json({ error: 'userId é obrigatório' });
 
-    // Confirma que o usuário existe
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
       .select('id, validade')
@@ -210,7 +292,12 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // impedir múltiplos pendentes
+    if (!isCardExpired(user.validade)) {
+      return res.status(400).json({
+        error: 'Sua carteirinha ainda está válida. Renovação só é permitida após expirar.',
+      });
+    }
+
     const { data: existing, error: existingError } = await supabaseAdmin
       .from('card_renewals')
       .select('id, status')
@@ -218,21 +305,12 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
       .eq('status', 'pending')
       .maybeSingle();
 
-      if (!isCardExpired(user.validade)) {
-      return res.status(400).json({
-      error: 'Sua carteirinha ainda está válida. Renovação só é permitida após expirar.',
-     });
-    }
-
-    if (existingError) {
-      console.error('Erro ao verificar renovações pendentes:', existingError);
-    }
+    if (existingError) console.error('Erro ao verificar renovações pendentes:', existingError);
 
     if (existing) {
       return res.status(400).json({
         error: 'Já existe um pedido de renovação pendente para este usuário.',
       });
-      
     }
 
     const proofUrl = await uploadRenewalProof(req.file);
@@ -253,8 +331,7 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
     }
 
     return res.status(201).json({
-      message:
-        'Pedido de renovação enviado com sucesso. Aguarde aprovação do administrador.',
+      message: 'Pedido de renovação enviado com sucesso. Aguarde aprovação do administrador.',
       renewalId: renewal.id,
     });
   } catch (err) {
@@ -263,21 +340,14 @@ app.post('/api/renewals', upload.single('comprovante'), async (req, res) => {
   }
 });
 
-// Renovar automaticamente a validade do usuário (admin)
 app.post('/api/admin/users/:id/renew', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-
-    // define a nova validade (fim do semestre atual)
     const validade = getNextSemesterValidity(new Date());
 
-    // atualiza o usuário
     const { data: updatedUser, error: userError } = await supabaseAdmin
       .from('users')
-      .update({
-        validade,
-        status: 'active',
-      })
+      .update({ validade, status: 'active' })
       .eq('id', id)
       .select()
       .single();
@@ -287,19 +357,13 @@ app.post('/api/admin/users/:id/renew', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: userError.message });
     }
 
-    // (opcional, mas RECOMENDADO)
-    // se existir pedido pendente desse usuário, marca como aprovado
-    // -> isso faz o sininho diminuir e não ficar “preso” em pendências antigas
     const { error: renewalsError } = await supabaseAdmin
       .from('card_renewals')
       .update({ status: 'approved' })
       .eq('user_id', id)
       .eq('status', 'pending');
 
-    if (renewalsError) {
-      console.error('Erro Supabase (auto approve pending renewals):', renewalsError);
-      // não bloqueia a renovação do usuário
-    }
+    if (renewalsError) console.error('Erro Supabase (auto approve pending renewals):', renewalsError);
 
     return res.json({
       message: 'Usuário renovado automaticamente com sucesso.',
@@ -311,7 +375,6 @@ app.post('/api/admin/users/:id/renew', requireAdmin, async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
-
 
 /* ------------------------------------------------------------------
    6. Rotas de páginas (HTML)
@@ -332,15 +395,12 @@ routes.forEach((route) => {
 });
 
 /* ------------------------------------------------------------------
-   7. Rotas de API - Autenticação e Usuário logado
+   7. Auth: login / logout / me
 ------------------------------------------------------------------- */
-
-/**
- * POST /api/login
- */
 app.post('/api/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = normalizeEmail(req.body.email);
+    const { password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -357,28 +417,17 @@ app.post('/api/login', async (req, res) => {
 
     if (error) {
       console.error('Erro Supabase (login):', error);
-      return res.status(500).json({
-        error: 'Erro ao buscar usuário',
-        code: 'DB_ERROR',
-      });
+      return res.status(500).json({ error: 'Erro ao buscar usuário', code: 'DB_ERROR' });
     }
 
     const user = users && users[0];
-
     if (!user) {
-      return res.status(401).json({
-        error: 'Email ou senha inválidos',
-        code: 'INVALID_CREDENTIALS',
-      });
+      return res.status(401).json({ error: 'Email ou senha inválidos', code: 'INVALID_CREDENTIALS' });
     }
 
     const passwordOk = await bcrypt.compare(password, user.password_hash);
-
     if (!passwordOk) {
-      return res.status(401).json({
-        error: 'Email ou senha inválidos',
-        code: 'INVALID_CREDENTIALS',
-      });
+      return res.status(401).json({ error: 'Email ou senha inválidos', code: 'INVALID_CREDENTIALS' });
     }
 
     if (user.status !== 'active') {
@@ -393,54 +442,80 @@ app.post('/api/login', async (req, res) => {
         code = 'INACTIVE';
       }
 
-      return res.status(403).json({
-        error: msg,
-        code,
-        status: user.status,
-      });
+      return res.status(403).json({ error: msg, code, status: user.status });
     }
+
+    // sessão
+    issueSession(res, user.id);
 
     const safeUser = mapUserToSafeUser(user);
     return res.json({ user: safeUser });
   } catch (err) {
     console.error('Erro /api/login:', err);
-    return res.status(500).json({
-      error: 'Erro interno no servidor',
-      code: 'INTERNAL_ERROR',
-    });
+    return res.status(500).json({ error: 'Erro interno no servidor', code: 'INTERNAL_ERROR' });
   }
 });
 
-// GET /api/me/:id
-app.get('/api/me/:id', async (req, res) => {
+app.post('/api/logout', (req, res) => {
+  clearSession(res);
+  return res.json({ ok: true });
+});
+
+// Novo /api/me baseado na sessão (preferível)
+app.get('/api/me', authRequired, async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.auth.sub;
 
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('id', id)
+      .eq('id', userId)
       .single();
 
-    if (error && error.code === 'PGRST116') {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    if (error) {
-      console.error('Erro Supabase (/api/me):', error);
-      return res.status(500).json({ error: 'Erro ao buscar usuário' });
-    }
-
-    if (!user) {
+    if (error || !user) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
     if (user.status !== 'active') {
       return res.status(403).json({
-        error: 'Seu cadastro não está mais ativo.',
+        error: 'Seu cadastro não está ativo.',
         code: 'INACTIVE',
         status: user.status,
       });
+    }
+
+    const safeUser = mapUserToSafeUser(user);
+    safeUser.isExpired = isCardExpired(user.validade);
+
+    return res.json({ user: safeUser });
+  } catch (err) {
+    console.error('Erro /api/me:', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Compatibilidade: mantém /api/me/:id, mas valida sessão e impede acessar outro usuário
+app.get('/api/me/:id', authRequired, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.auth.sub;
+
+    if (id !== userId) {
+      return res.status(403).json({ error: 'Acesso negado', code: 'FORBIDDEN' });
+    }
+
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error && error.code === 'PGRST116') return res.status(404).json({ error: 'Usuário não encontrado' });
+    if (error) return res.status(500).json({ error: 'Erro ao buscar usuário' });
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+    if (user.status !== 'active') {
+      return res.status(403).json({ error: 'Seu cadastro não está mais ativo.', code: 'INACTIVE', status: user.status });
     }
 
     const safeUser = mapUserToSafeUser(user);
@@ -453,11 +528,15 @@ app.get('/api/me/:id', async (req, res) => {
   }
 });
 
-// PUT /api/me/:id -> atualizar dados básicos do próprio usuário
-// (alinhado com o fetch do dadosUser.js)
-app.put('/api/me/:id', async (req, res) => {
+app.put('/api/me/:id', authRequired, async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.auth.sub;
+
+    if (id !== userId) {
+      return res.status(403).json({ error: 'Acesso negado', code: 'FORBIDDEN' });
+    }
+
     const { nome, nomePerfil, curso, campus } = req.body;
 
     const updatePayload = {};
@@ -473,7 +552,7 @@ app.put('/api/me/:id', async (req, res) => {
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .update(updatePayload)
-      .eq('id', id)
+      .eq('id', userId)
       .select('*')
       .single();
 
@@ -493,76 +572,70 @@ app.put('/api/me/:id', async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   8. Rotas de API - Admin (CRUD de usuários)
+   8. Rotas de API - Admin (CRUD) [mantidas]
 ------------------------------------------------------------------- */
+app.post('/api/admin/users', requireAdmin, upload.single('foto'), async (req, res) => {
+  try {
+    const {
+      email,
+      password,
+      nome,
+      nomePerfil,
+      curso,
+      campus,
+      matricula,
+      cpf,
+      numeroTel,
+      dataNascimento,
+      validade,
+      status,
+    } = req.body;
 
-app.post(
-  '/api/admin/users',
-  requireAdmin,
-  upload.single('foto'),
-  async (req, res) => {
+    if (!email || !password || !nome || !nomePerfil) {
+      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
+    }
+
+    let fotoUrl;
     try {
-      const {
-        email,
-        password,
+      fotoUrl = await uploadUserImage(req.file);
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    const password_hash = await bcrypt.hash(password, 10);
+    const validadeCart = validade || getNextSemesterValidity();
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        email: normalizeEmail(email),
+        password_hash,
         nome,
-        nomePerfil,
+        nome_perfil: nomePerfil,
         curso,
         campus,
         matricula,
         cpf,
-        numeroTel,
-        dataNascimento,
-        validade,
-        status,
-      } = req.body;
+        numero_tel: numeroTel,
+        data_nascimento: dataNascimento,
+        validade: validadeCart,
+        foto_url: fotoUrl,
+        status: status || 'active',
+      })
+      .select()
+      .single();
 
-      if (!email || !password || !nome || !nomePerfil) {
-        return res.status(400).json({ error: 'Campos obrigatórios faltando' });
-      }
-
-      let fotoUrl;
-      try {
-        fotoUrl = await uploadUserImage(req.file);
-      } catch (err) {
-        return res.status(400).json({ error: err.message });
-      }
-
-      const password_hash = await bcrypt.hash(password, 10);
-      const validadeCart = validade || getNextSemesterValidity();
-
-      const { data, error } = await supabaseAdmin
-        .from('users')
-        .insert({
-          email,
-          password_hash,
-          nome,
-          nome_perfil: nomePerfil,
-          curso,
-          campus,
-          matricula,
-          cpf,
-          numero_tel: numeroTel,
-          data_nascimento: dataNascimento,
-          validade: validadeCart,
-          foto_url: fotoUrl,
-          status: status || 'active',
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro Supabase (create user):', error);
-        return res.status(400).json({ error: error.message });
-      }
-
-      return res.status(201).json(data);
-    } catch (err) {
-      console.error('Erro /api/admin/users (POST):', err);
-      return res.status(500).json({ error: 'Erro interno no servidor' });
+    if (error) {
+      console.error('Erro Supabase (create user):', error);
+      return res.status(400).json({ error: error.message });
     }
+
+    return res.status(201).json(data);
+  } catch (err) {
+    console.error('Erro /api/admin/users (POST):', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
   }
-);
+});
 
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
@@ -583,76 +656,70 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
   }
 });
 
-app.put(
-  '/api/admin/users/:id',
-  requireAdmin,
-  upload.single('foto'),
-  async (req, res) => {
-    try {
-      const { id } = req.params;
+app.put('/api/admin/users/:id', requireAdmin, upload.single('foto'), async (req, res) => {
+  try {
+    const { id } = req.params;
 
-      const {
-        email,
-        password,
-        nome,
-        nomePerfil,
-        curso,
-        campus,
-        matricula,
-        cpf,
-        numeroTel,
-        dataNascimento,
-        validade,
-        status,
-      } = req.body;
+    const {
+      email,
+      password,
+      nome,
+      nomePerfil,
+      curso,
+      campus,
+      matricula,
+      cpf,
+      numeroTel,
+      dataNascimento,
+      validade,
+      status,
+    } = req.body;
 
-      const updatePayload = {};
+    const updatePayload = {};
 
-      if (email !== undefined) updatePayload.email = email;
-      if (nome !== undefined) updatePayload.nome = nome;
-      if (nomePerfil !== undefined) updatePayload.nome_perfil = nomePerfil;
-      if (curso !== undefined) updatePayload.curso = curso;
-      if (campus !== undefined) updatePayload.campus = campus;
-      if (matricula !== undefined) updatePayload.matricula = matricula;
-      if (cpf !== undefined) updatePayload.cpf = cpf;
-      if (numeroTel !== undefined) updatePayload.numero_tel = numeroTel;
-      if (dataNascimento !== undefined)
-        updatePayload.data_nascimento = dataNascimento;
-      if (validade !== undefined) updatePayload.validade = validade;
-      if (status !== undefined) updatePayload.status = status;
+    if (email !== undefined) updatePayload.email = normalizeEmail(email);
+    if (nome !== undefined) updatePayload.nome = nome;
+    if (nomePerfil !== undefined) updatePayload.nome_perfil = nomePerfil;
+    if (curso !== undefined) updatePayload.curso = curso;
+    if (campus !== undefined) updatePayload.campus = campus;
+    if (matricula !== undefined) updatePayload.matricula = matricula;
+    if (cpf !== undefined) updatePayload.cpf = cpf;
+    if (numeroTel !== undefined) updatePayload.numero_tel = numeroTel;
+    if (dataNascimento !== undefined) updatePayload.data_nascimento = dataNascimento;
+    if (validade !== undefined) updatePayload.validade = validade;
+    if (status !== undefined) updatePayload.status = status;
 
-      if (password) {
-        updatePayload.password_hash = await bcrypt.hash(password, 10);
-      }
-
-      if (req.file) {
-        try {
-          const novaFotoUrl = await uploadUserImage(req.file);
-          updatePayload.foto_url = novaFotoUrl;
-        } catch (err) {
-          return res.status(400).json({ error: err.message });
-        }
-      }
-
-      const { data, error } = await supabaseAdmin
-        .from('users')
-        .update(updatePayload)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro Supabase (update user):', error);
-        return res.status(400).json({ error: error.message });
-      }
-
-      return res.json(data);
-    } catch (err) {
-      console.error('Erro /api/admin/users/:id (PUT):', err);
-      return res.status(500).json({ error: 'Erro interno no servidor' });
+    if (password) {
+      updatePayload.password_hash = await bcrypt.hash(password, 10);
     }
+
+    if (req.file) {
+      try {
+        const novaFotoUrl = await uploadUserImage(req.file);
+        updatePayload.foto_url = novaFotoUrl;
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .update(updatePayload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro Supabase (update user):', error);
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    console.error('Erro /api/admin/users/:id (PUT):', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
   }
-);
+});
 
 app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
   try {
@@ -684,9 +751,8 @@ app.patch('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   Admin - Renovações de carteirinha
+   Admin - Renovações
 ------------------------------------------------------------------- */
-
 app.get('/api/admin/users/:id/renewals', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -729,10 +795,7 @@ app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
 
     const { data: updatedUser, error: userError } = await supabaseAdmin
       .from('users')
-      .update({
-        validade,
-        status: 'active',
-      })
+      .update({ validade, status: 'active' })
       .eq('id', renewal.user_id)
       .select()
       .single();
@@ -747,9 +810,7 @@ app.post('/api/admin/renewals/:id/approve', requireAdmin, async (req, res) => {
       .update({ status: 'approved' })
       .eq('id', id);
 
-    if (updateRenewalError) {
-      console.error('Erro Supabase (update renewal status):', updateRenewalError);
-    }
+    if (updateRenewalError) console.error('Erro Supabase (update renewal status):', updateRenewalError);
 
     return res.json({ user: updatedUser });
   } catch (err) {
@@ -762,7 +823,6 @@ app.get('/api/admin/renewals/pending', requireAdmin, async (req, res) => {
   try {
     const { startISO, endISO } = getCurrentSemesterRange(new Date());
 
-    // pega pendentes do período atual e já traz dados do usuário
     const { data, error } = await supabaseAdmin
       .from('card_renewals')
       .select(`
@@ -790,10 +850,7 @@ app.get('/api/admin/renewals/pending', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    // só alerta se o usuário estiver expirado
-    const expiredPending = (data || []).filter((r) =>
-      isCardExpired(r?.users?.validade)
-    );
+    const expiredPending = (data || []).filter((r) => isCardExpired(r?.users?.validade));
 
     return res.json({
       pendingCount: expiredPending.length,
@@ -818,7 +875,6 @@ app.get('/api/admin/renewals/pending', requireAdmin, async (req, res) => {
   }
 });
 
-
 app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -840,10 +896,7 @@ app.post('/api/admin/renewals/:id/reject', requireAdmin, async (req, res) => {
       .eq('id', id);
 
     if (updateRenewalError) {
-      console.error(
-        'Erro Supabase (update renewal status reject):',
-        updateRenewalError
-      );
+      console.error('Erro Supabase (update renewal status reject):', updateRenewalError);
       return res.status(400).json({ error: updateRenewalError.message });
     }
 
@@ -858,10 +911,7 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabaseAdmin
-      .from('users')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabaseAdmin.from('users').delete().eq('id', id);
 
     if (error) {
       console.error('Erro Supabase (delete user):', error);
@@ -876,30 +926,25 @@ app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------
-   9. Cadastro público
+   9. Cadastro público (agora com validação + auto-login)
 ------------------------------------------------------------------- */
-
 app.post('/api/public/register', upload.single('foto'), async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      nome,
-      nomePerfil,
-      curso,
-      campus,
-      matricula,
-      cpf,
-      numeroTel,
-      dataNascimento,
-    } = req.body;
+    const body = req.body;
 
-    if (!email || !password || !nome || !nomePerfil) {
+    // validação por campo (retorna fields)
+    const fields = validateRegisterPayload(body);
+    if (Object.keys(fields).length) {
       return res.status(400).json({
-        error: 'Nome, Nome de Perfil, Email e Senha são obrigatórios',
+        error: 'Dados inválidos',
+        code: 'VALIDATION_ERROR',
+        fields,
       });
     }
 
+    const email = normalizeEmail(body.email);
+
+    // checa email duplicado
     const { data: existing, error: existingError } = await supabaseAdmin
       .from('users')
       .select('id')
@@ -908,21 +953,30 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
 
     if (existingError) {
       console.error('Erro Supabase (check existing email):', existingError);
-      return res.status(500).json({ error: 'Erro ao validar email' });
+      return res.status(500).json({ error: 'Erro ao validar email', code: 'DB_ERROR' });
     }
 
     if (existing && existing.length > 0) {
-      return res.status(400).json({ error: 'Email já cadastrado' });
+      return res.status(400).json({
+        error: 'Email já cadastrado',
+        code: 'DUPLICATE_EMAIL',
+        fields: { email: 'Este email já está em uso.' },
+      });
     }
 
+    // upload foto
     let fotoUrl;
     try {
       fotoUrl = await uploadUserImage(req.file);
     } catch (err) {
-      return res.status(400).json({ error: err.message });
+      return res.status(400).json({
+        error: err.message,
+        code: 'INVALID_PHOTO',
+        fields: { foto: err.message },
+      });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = await bcrypt.hash(body.password, 10);
     const validadeCart = getNextSemesterValidity();
 
     const { data, error } = await supabaseAdmin
@@ -930,14 +984,14 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
       .insert({
         email,
         password_hash,
-        nome,
-        nome_perfil: nomePerfil,
-        curso,
-        campus,
-        matricula,
-        cpf,
-        numero_tel: numeroTel,
-        data_nascimento: dataNascimento,
+        nome: String(body.nome).trim(),
+        nome_perfil: String(body.nomePerfil).trim(),
+        curso: String(body.curso).trim(),
+        campus: String(body.campus).trim(),
+        matricula: String(body.matricula).trim(),
+        cpf: onlyDigits(body.cpf),
+        numero_tel: onlyDigits(body.numeroTel),
+        data_nascimento: body.dataNascimento,
         validade: validadeCart,
         foto_url: fotoUrl,
         status: 'active',
@@ -947,16 +1001,19 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
 
     if (error) {
       console.error('Erro Supabase (public register):', error);
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message, code: 'DB_INSERT_ERROR' });
     }
 
+    // auto-login
+    issueSession(res, data.id);
+
     return res.status(201).json({
-      message: 'Cadastro realizado com sucesso. Você já pode fazer login.',
-      userId: data.id,
+      message: 'Cadastro realizado com sucesso.',
+      user: mapUserToSafeUser(data),
     });
   } catch (err) {
     console.error('Erro /api/public/register:', err);
-    return res.status(500).json({ error: 'Erro interno no servidor' });
+    return res.status(500).json({ error: 'Erro interno no servidor', code: 'INTERNAL_SERVER_ERROR' });
   }
 });
 
@@ -966,7 +1023,6 @@ app.post('/api/public/register', upload.single('foto'), async (req, res) => {
 app.post('/saveLocation', (req, res) => {
   const { latitude, longitude } = req.body;
   console.log(`Localização recebida: Latitude: ${latitude}, Longitude: ${longitude}`);
-
   res.send('Localização recebida com sucesso');
 });
 
@@ -976,8 +1032,7 @@ app.post('/saveLocation', (req, res) => {
 app.use('/email', emailRoutes);
 
 /* ------------------------------------------------------------------
-   12. Middleware de erro global (INCLUI erros do Multer)
-   -> TEM que vir DEPOIS das rotas que usam upload.single(...)
+   12. Middleware de erro global (inclui Multer)
 ------------------------------------------------------------------- */
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
@@ -987,6 +1042,7 @@ app.use((err, req, res, next) => {
       return res.status(400).json({
         error: 'A imagem enviada é muito grande. Tamanho máximo permitido é de 5MB.',
         code: 'FILE_TOO_LARGE',
+        fields: { foto: 'Imagem maior que 5MB.' },
       });
     }
 
@@ -994,6 +1050,7 @@ app.use((err, req, res, next) => {
       error: 'Erro ao processar o upload do arquivo.',
       code: 'MULTER_ERROR',
       details: err.message,
+      fields: { foto: 'Falha no upload da imagem.' },
     });
   }
 
