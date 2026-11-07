@@ -9,6 +9,40 @@ Projeto focado em prática de FullStack, com autenticação, upload de imagens, 
 
 ---
 
+## Visão de engenharia
+
+**Tipo:** projeto acadêmico de estudo Full Stack, com dados e instituição fictícios.
+
+O objetivo foi exercitar um fluxo completo com **Node.js/Express**, operações CRUD, autenticação, upload de arquivos e persistência em PostgreSQL via Supabase. O projeto é útil para avaliar fundamentos de API, sessões, modelagem de dados e organização de fluxos administrativos.
+
+| Aspecto | Implementação de estudo |
+| --- | --- |
+| Backend | Node.js e Express |
+| Banco e arquivos | Supabase PostgreSQL e Storage |
+| Controle de acesso | Fluxos de login e painel administrativo |
+| Operação | Cadastro, emissão, consulta e renovação de carteirinhas |
+| Interface | HTML, CSS, JavaScript e Bootstrap |
+
+### Limitações e cuidados
+
+- **Não é um serviço de identificação oficial.** Não utilizar dados pessoais reais para avaliar o projeto.
+- **Não homologado para produção.** Autenticação, tratamento de arquivos, dependências, autorização e políticas de banco exigem auditoria de segurança antes de qualquer uso real.
+- O repositório precisa de manutenção de higiene Git: há dependências `node_modules` versionadas historicamente, que devem ser removidas do índice e do histórico conforme o caso. Adicionar `.gitignore` não remove arquivos já rastreados.
+- O `package.json` possui scripts `start` e `dev`; não há uma suíte automatizada de testes declarada, portanto não se deve anunciar cobertura de testes inexistente.
+
+### Execução para análise local
+
+**Pré-requisitos:** Node.js 18+, npm e um ambiente Supabase de desenvolvimento configurado com credenciais próprias.
+
+```bash
+npm ci
+npm run dev
+```
+
+Use variáveis de ambiente fora do controle de versão. Antes de executar fluxos administrativos, revise as configurações e controles do backend.
+
+---
+
 ## ✨ Funcionalidades
 
 - ✅ Cadastro público de usuário com:
