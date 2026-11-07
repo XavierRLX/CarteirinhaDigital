@@ -1,1 +1,12 @@
+# Local secrets
 .env
+.env.*
+!.env.example
+
+# Dependencies and local outputs
+node_modules/
+dist/
+build/
+coverage/
+*.log
+.DS_Store
